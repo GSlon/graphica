@@ -61,7 +61,7 @@ namespace WpfApp1
             
             else if (handle_move.IsChecked == true )
             {
-               if ((check) & !(ellipse.IsMouseOver))
+               if ( !(ellipse.IsMouseOver))
                 {
                     ellipse.Margin = new Thickness(e.GetPosition(field).X - 25, e.GetPosition(field).Y - 25, 0, 0);
                     check = false;

@@ -15,7 +15,7 @@
                 
                 <Separator />
                 
-                <MenuItem Header="_Exit" ></MenuItem>
+                <MenuItem Header="_Exit" />
             </MenuItem>
             
             <MenuItem Header="?" ></MenuItem>
