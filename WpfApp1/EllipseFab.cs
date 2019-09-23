@@ -36,7 +36,8 @@ namespace WpfApp1
                 Height = 50,
                 Opacity = 1,
                 Stroke = Brushes.Black,
-                Margin = new System.Windows.Thickness(x1, y1, x2, y2)
+                Margin = new System.Windows.Thickness(x1, y1, x2, y2),
+                //Name =  
             };
 
             elps.Fill = br;
