@@ -20,7 +20,7 @@ namespace WpfApp1
             text = new TextBlock
             {
                 Text = txt,
-                Background = Brushes.Red,
+                Background = Brushes.Pink,
                 Width = 40,
                 Height = 40,
                 TextAlignment = System.Windows.TextAlignment.Center,
