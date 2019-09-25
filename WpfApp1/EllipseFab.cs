@@ -22,8 +22,8 @@ namespace WpfApp1
                 Width = 40,
                 Height = 40,
                 TextAlignment = System.Windows.TextAlignment.Center,
-                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
-                VerticalAlignment = System.Windows.VerticalAlignment.Center
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
+                VerticalAlignment = System.Windows.VerticalAlignment.Stretch
             };
 
             BitmapCacheBrush br = new BitmapCacheBrush(text);
@@ -34,7 +34,7 @@ namespace WpfApp1
                 Height = 50,
                 Opacity = 1,    // непрозрачность
                 Stroke = Brushes.Black,
-                Margin = new System.Windows.Thickness(center.X, center.Y, bottom.X, bottom.Y),
+                Margin = new System.Windows.Thickness(center.X - 25, center.Y - 25, bottom.X, bottom.Y),
                 Tag = txt       // надпись получим через tag       
             };
 

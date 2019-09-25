@@ -27,7 +27,7 @@ namespace WpfApp1
             path.Tag = name;
             path.Data = pathGeometry;
             path.Stroke = brush;
-            path.StrokeThickness = 3;
+            path.StrokeThickness = 1.3;
 
             if (orient)
             {

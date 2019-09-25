@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="Graphs" Height="450" Width="800">
+        Title="Graphs" Height="450" Width="800" Activated="Window_Activated">
 
     <DockPanel>
         <Menu DockPanel.Dock="Top" Background="#FFFBFB90" >

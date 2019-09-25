@@ -48,6 +48,7 @@ namespace WpfApp1
             data.Add(vertex, new LinkedList<Edge>());
         }
 
+        // петля
         public Graph(Vertex vertex, Edge edge)
         {
             if (edge.From != edge.To)
@@ -79,7 +80,7 @@ namespace WpfApp1
                 data.Add(vertex, new LinkedList<Edge>());
                 foreach (var edge in edges)
                 {
-                    if (vertex == edge.From)
+                    if (vertex == edge.From)    // ключ: вершина; значение: все ребра, из этой вершины стартующие
                     {
                         data[vertex].AddLast(edge);
                     }

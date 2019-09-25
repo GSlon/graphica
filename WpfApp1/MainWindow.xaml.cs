@@ -44,11 +44,26 @@ namespace WpfApp1
         {
             if ((cursor.IsChecked == true))
             {
-                Vertex vert = new Vertex("rr", 100, 100);
-                DrawGraph drgr = new DrawGraph(field, new Graph(vert, new Edge("d", vert, vert)));
+                List<Vertex> vertices = new List<Vertex> { new Vertex("школа", 150, 100), new Vertex("дом", 100, 60) };
+                //List<Edge> edges = new List<Edge> { new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], 
+                //    vertices[1]),new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]),
+                //    new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[1], vertices[2]),new Edge("d", vertices[2], vertices[2]),new Edge("d", vertices[2], vertices[1]) };
+
+                List<Edge> edges = new List<Edge> { new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]) };
+
+                DrawGraph drgr = new DrawGraph(field, new Graph(vertices, edges));
                 drgr.Draw();
 
+               
+               
 
+                //Vertex vertex = new Vertex("ee", 350, 150);
+                //Vertex vertex2 = new Vertex("lol", 550, 250);
+                //List<Vertex> vertices = new List<Vertex> { vertex, vertex2 };
+                //List<Edge> edges = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2) };
+
+                //DrawGraph dr = new DrawGraph(field, new Graph(vertices, edges));
+                //dr.Draw();
 
             }
             else if (vertex.IsChecked == true)
@@ -56,8 +71,8 @@ namespace WpfApp1
                 Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X - 25, e.GetPosition(field).Y - 25), new Point(0, 0), Brushes.Red, i.ToString());
                 Ellipse el2 = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X - 100, e.GetPosition(field).Y - 100), new Point(0, 0), Brushes.Red, i.ToString());
 
-                el.MouseDown += new MouseButtonEventHandler(El_MouseDown);
-                el2.MouseDown += new MouseButtonEventHandler(El_MouseDown);
+                el.MouseDown += new MouseButtonEventHandler(Ellipse_MouseDown);
+                el2.MouseDown += new MouseButtonEventHandler(Ellipse_MouseDown);
                 
                 // el.MouseMove += new MouseEventHandler(mouse_Move);
                 // el.MouseUp += new MouseButtonEventHandler(mouse_Up);
@@ -68,10 +83,11 @@ namespace WpfApp1
                 field.Children.Add(el2);
                 var path = BezPathFab.GetPath(new Point(e.GetPosition(field).X + 25, e.GetPosition(field).Y+25), new Point(e.GetPosition(field).X + 150,
                                         e.GetPosition(field).Y - 150), new Point(e.GetPosition(field).X - 50, e.GetPosition(field).Y - 75), Brushes.Red,"", true);
+
                 path.MouseDown += new MouseButtonEventHandler(Path_Mouse_Down); 
                 field.Children.Add(path);
-                
 
+                
 
                 //Path.
                 //field.Children.
@@ -89,7 +105,7 @@ namespace WpfApp1
            
         }
 
-        private void El_MouseDown(object sender, MouseButtonEventArgs e)
+        private void Ellipse_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (cursor.IsChecked == true)
             { 
@@ -117,13 +133,35 @@ namespace WpfApp1
             }
         }
 
-        private void Path_Mouse_Down(object sender, MouseButtonEventArgs e)
+        private void Path_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (cursor.IsChecked == true)
             {
                 MessageBox.Show("d");
             }
         }
+
+        // новым фигурам заполняем делегаты 
+        private void Update_Canvas()
+        {
+            for (int i = 0; i < field.Children.Count; i++)
+            {
+                if (field.Children[i].GetType().Name.ToString().Equals("Ellipse"))
+                {
+                    field.Children[i].MouseDown += Ellipse_MouseDown;
+                }
+                else if (field.Children[i].GetType().Name.ToString().Equals("Path"))
+                {
+                    field.Children[i].MouseDown += Path_MouseDown;
+                }
+            }
+        }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            
+        }
+
 
         /*
         protected void mouse_Move(object sender, MouseEventArgs e)
