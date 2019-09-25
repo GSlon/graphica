@@ -6,21 +6,19 @@ using System.Threading.Tasks;
 using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Controls;
+using System.Windows;
 
 namespace WpfApp1
 {
     class EllipseFab
     {
-        private Ellipse elps;
-        private BitmapCacheBrush br;
-        private TextBlock text;
-
-        public EllipseFab(double x1, double y1, double x2, double y2, string txt = "")
+        // ChangeText - через создание нового эллипса (эллипсы являются неизменяемыми)
+        public static Ellipse GetEllipse(Point center, Point bottom, Brush brush, string txt = "")
         {
-            text = new TextBlock
+            TextBlock text = new TextBlock
             {
                 Text = txt,
-                Background = Brushes.Pink,
+                Background = brush,
                 Width = 40,
                 Height = 40,
                 TextAlignment = System.Windows.TextAlignment.Center,
@@ -28,29 +26,41 @@ namespace WpfApp1
                 VerticalAlignment = System.Windows.VerticalAlignment.Center
             };
 
-            br = new BitmapCacheBrush(text);
+            BitmapCacheBrush br = new BitmapCacheBrush(text);
 
-            elps = new Ellipse
+            Ellipse elps = new Ellipse
             {
                 Width = 50,
                 Height = 50,
-                Opacity = 1,
+                Opacity = 1,    // непрозрачность
                 Stroke = Brushes.Black,
-                Margin = new System.Windows.Thickness(x1, y1, x2, y2),
-                //Name =  
+                Margin = new System.Windows.Thickness(center.X, center.Y, bottom.X, bottom.Y),
+                Tag = txt       // надпись получим через tag       
             };
 
             elps.Fill = br;
+
+            return elps;
         }
 
-        //EllipseFab(string text, Int32 x, Int32 y, Brushes brush)  //на случай закраски другим цветом
-        //{
-
-        //}
-
-        public Ellipse GetEllipse()
+        public static void ChangeEllipse(Ellipse ellipse, Brush brush, string txt = "")
         {
-            return elps;
+            TextBlock text = new TextBlock
+            {
+                Text = txt,
+                Background = brush,
+                Width = ellipse.Width - 10,
+                Height = ellipse.Height - 10,
+                TextAlignment = System.Windows.TextAlignment.Center,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
+            };
+
+            BitmapCacheBrush br = new BitmapCacheBrush(text);
+
+            ellipse.Opacity = 1;
+            ellipse.Tag = txt;
+            ellipse.Fill = br;
         }
     }
 

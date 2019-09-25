@@ -55,7 +55,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Draw.cs" />
+    <Compile Include="BezPathFab.cs" />
+    <Compile Include="ConvertGraph.cs" />
+    <Compile Include="DrawGraph.cs" />
     <Compile Include="EllipseFab.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

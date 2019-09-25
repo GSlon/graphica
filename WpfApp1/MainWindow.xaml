@@ -25,11 +25,11 @@
         <Separator DockPanel.Dock="Top"></Separator>
 
         <ToolBar DockPanel.Dock="Top" Height="45">
-            <Button Content="back">
+            <Button Content="Undo">
                 
             </Button>
 
-            <Button Content="next">
+            <Button Content="Redo">
                 
             </Button>
 
@@ -64,10 +64,10 @@
                 <ColumnDefinition Width="0.25*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <Canvas Name ="field" Grid.Column="0" Background="Aqua" MouseLeftButtonDown="Field_MouseLeftButtonDown">
-
-            </Canvas>
-
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <Canvas Name ="field" Background="Aqua" MouseLeftButtonDown="Field_MouseLeftButtonDown" ClipToBounds="True" />
+            </ScrollViewer>
+                
             <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"
                 HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="WhiteSmoke">
             </GridSplitter>

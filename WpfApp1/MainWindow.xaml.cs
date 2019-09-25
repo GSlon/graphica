@@ -25,9 +25,11 @@ namespace WpfApp1
 
        
         static Int16 i;
-        bool check; // можно убрать
-        Ellipse ellipse; // универсальный эллипс
-
+        bool check;         // можно убрать
+        Ellipse ellipse;    // универсальный эллипс
+        //DrawGraph drawGraph;
+        //Graph graph;
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -42,21 +44,38 @@ namespace WpfApp1
         {
             if ((cursor.IsChecked == true))
             {
-                MessageBox.Show("cursor");
+                Vertex vert = new Vertex("rr", 100, 100);
+                DrawGraph drgr = new DrawGraph(field, new Graph(vert, new Edge("d", vert, vert)));
+                drgr.Draw();
+
+
+
             }
             else if (vertex.IsChecked == true)
             {
-                Ellipse el = new EllipseFab(e.GetPosition(field).X - 25, e.GetPosition(field).Y - 25, 0, 0, i.ToString()).GetEllipse();
+                Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X - 25, e.GetPosition(field).Y - 25), new Point(0, 0), Brushes.Red, i.ToString());
+                Ellipse el2 = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X - 100, e.GetPosition(field).Y - 100), new Point(0, 0), Brushes.Red, i.ToString());
 
-                el.MouseDown+= new MouseButtonEventHandler(El_MouseDown);          
+                el.MouseDown += new MouseButtonEventHandler(El_MouseDown);
+                el2.MouseDown += new MouseButtonEventHandler(El_MouseDown);
+                
                 // el.MouseMove += new MouseEventHandler(mouse_Move);
                 // el.MouseUp += new MouseButtonEventHandler(mouse_Up);
 
                 i++;
 
                 field.Children.Add(el);
+                field.Children.Add(el2);
+                var path = BezPathFab.GetPath(new Point(e.GetPosition(field).X + 25, e.GetPosition(field).Y+25), new Point(e.GetPosition(field).X + 150,
+                                        e.GetPosition(field).Y - 150), new Point(e.GetPosition(field).X - 50, e.GetPosition(field).Y - 75), Brushes.Red,"", true);
+                path.MouseDown += new MouseButtonEventHandler(Path_Mouse_Down); 
+                field.Children.Add(path);
                 
-                
+
+
+                //Path.
+                //field.Children.
+                //new Grid().Children.Add();
             }
             
             else if (handle_move.IsChecked == true )
@@ -70,7 +89,7 @@ namespace WpfApp1
            
         }
 
-        protected void El_MouseDown(object sender, MouseButtonEventArgs e)
+        private void El_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (cursor.IsChecked == true)
             { 
@@ -98,7 +117,14 @@ namespace WpfApp1
             }
         }
 
-        
+        private void Path_Mouse_Down(object sender, MouseButtonEventArgs e)
+        {
+            if (cursor.IsChecked == true)
+            {
+                MessageBox.Show("d");
+            }
+        }
+
         /*
         protected void mouse_Move(object sender, MouseEventArgs e)
         {
