@@ -21,12 +21,6 @@ namespace WpfApp1
 
     public partial class MainWindow : Window
     {
-        //   private Graph graph;
-
-       
-        static Int16 i;
-        bool check;         // можно убрать
-        Ellipse ellipse;    // универсальный эллипс
         //DrawGraph drawGraph;
         //Graph graph;
         
@@ -34,9 +28,6 @@ namespace WpfApp1
         {
             InitializeComponent();
 
-            i = 0;
-            check = false;
-            ellipse = new Ellipse();
        
         }
 
@@ -68,23 +59,18 @@ namespace WpfApp1
             }
             else if (vertex.IsChecked == true)
             {
-                Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X - 25, e.GetPosition(field).Y - 25), new Point(0, 0), Brushes.Red, i.ToString());
-                Ellipse el2 = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X - 100, e.GetPosition(field).Y - 100), new Point(0, 0), Brushes.Red, i.ToString());
-
+                Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), new Point(0, 0), Brushes.Red, "uu");
+                
                 el.MouseDown += new MouseButtonEventHandler(Ellipse_MouseDown);
-                el2.MouseDown += new MouseButtonEventHandler(Ellipse_MouseDown);
                 
                 // el.MouseMove += new MouseEventHandler(mouse_Move);
                 // el.MouseUp += new MouseButtonEventHandler(mouse_Up);
 
-                i++;
-
                 field.Children.Add(el);
-                field.Children.Add(el2);
-                var path = BezPathFab.GetPath(new Point(e.GetPosition(field).X + 25, e.GetPosition(field).Y+25), new Point(e.GetPosition(field).X + 150,
-                                        e.GetPosition(field).Y - 150), new Point(e.GetPosition(field).X - 50, e.GetPosition(field).Y - 75), Brushes.Red,"", true);
+                var path = BezPathFab.GetPath(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), new Point((e.GetPosition(field).X + 50)/2 + 20,
+                                        (e.GetPosition(field).Y + 100)/2 - 50), new Point(e.GetPosition(field).X - 50, e.GetPosition(field).Y - 75), Brushes.Red,"", true);
 
-                path.MouseDown += new MouseButtonEventHandler(Path_Mouse_Down); 
+                path.MouseDown += new MouseButtonEventHandler(Path_MouseDown); 
                 field.Children.Add(path);
 
                 
@@ -94,13 +80,9 @@ namespace WpfApp1
                 //new Grid().Children.Add();
             }
             
-            else if (handle_move.IsChecked == true )
+            else if (hand.IsChecked == true )
             {
-               if ( !(ellipse.IsMouseOver))
-                {
-                    ellipse.Margin = new Thickness(e.GetPosition(field).X - 25, e.GetPosition(field).Y - 25, 0, 0);
-                    check = false;
-                }
+              
             }
            
         }
@@ -121,10 +103,9 @@ namespace WpfApp1
             {
 
             }
-            else if (handle_move.IsChecked == true)
+            else if (hand.IsChecked == true)
             {   
-                ellipse = (Ellipse)sender;
-                check = true;
+                
             }
             else if (delete.IsChecked == true)
             {

@@ -82,7 +82,7 @@ namespace WpfApp1
                             middle.X = (temp[k].To.X + temp[k].From.X)/2;
                             middle.Y = (temp[k].To.Y + temp[k].From.Y)/2;
                         }
-                        else if (k % 2 != 0)
+                        else if (k % 2 != 0)    // нечетные
                         {
                             middle.X = (temp[k].To.X + temp[k].From.X)/2 - k * 15 - 10;
                             middle.Y = (temp[k].To.Y + temp[k].From.Y)/2;
@@ -111,7 +111,7 @@ namespace WpfApp1
                         panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X-15, edge.From.Y-15), new Point(edge.To.X - 70,
                                        edge.To.Y + 70), new Point(edge.To.X+15, edge.To.Y+15), brush, edge.Name, false));
 
-                        break;      //петля для данной вершины всегда одна
+                        break;                      //петля для данной вершины всегда одна
                     }
                 }
             }

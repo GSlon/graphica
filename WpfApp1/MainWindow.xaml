@@ -36,7 +36,7 @@
             <Separator></Separator>
             <Separator></Separator>
 
-            <RadioButton GroupName="Mode" Name="cursor"  IsChecked="True">
+            <RadioButton GroupName="Mode" Name="cursor" IsChecked="True">
                 <Image Source="src/cursor.jpg"/>
             </RadioButton>
             
@@ -48,7 +48,7 @@
                 <Image Source="src/edge.jpg"/>
             </RadioButton>
             
-            <RadioButton GroupName="Mode" Name="handle_move">
+            <RadioButton GroupName="Mode" Name="hand">
                 <Image Source="src/l_pr.jpg"/>
             </RadioButton>
             
