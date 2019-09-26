@@ -80,16 +80,36 @@ namespace WpfApp1
                 data.Add(vertex, new LinkedList<Edge>());
                 foreach (var edge in edges)
                 {
-                    if (vertex == edge.From)    // ключ: вершина; значение: все ребра, из этой вершины стартующие
+                    if ((vertex == edge.From) && (verts.Contains(edge.To)))    // ключ: вершина; значение: все ребра, из этой вершины стартующие
                     {
                         data[vertex].AddLast(edge);
                     }
                 }
             }
         }
-        
-        //Add Vertex
-        //Add Edge
+
+        public Graph(Graph graph)
+        {
+            data = graph.GetGraph();
+        }
+
+        public void AddVertex(Vertex ver)
+        {
+            data.Add(ver, new LinkedList<Edge>());
+        }
+
+        public void AddEdge(Edge edge)
+        {
+            if (data.ContainsKey(edge.From) && data.ContainsKey(edge.To))
+            {
+                data[edge.From].AddLast(edge);
+            }
+        }
+
+        public void SetGraph(Graph graph)
+        {
+            data = graph.GetGraph();
+        }
 
         public Dictionary<Vertex, LinkedList<Edge>> GetGraph()
         {

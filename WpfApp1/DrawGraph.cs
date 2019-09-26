@@ -73,28 +73,16 @@ namespace WpfApp1
                         }
                     }
 
-                    Point middle = new Point();
+                    int itemp = 0;          // на первом шаге без отступа
                     for (int k = 0; k < temp.Count; k++)
                     {
-                        // формируем middle точку
-                        if (k == 0)
-                        {
-                            middle.X = (temp[k].To.X + temp[k].From.X)/2;
-                            middle.Y = (temp[k].To.Y + temp[k].From.Y)/2;
-                        }
-                        else if (k % 2 != 0)    // нечетные
-                        {
-                            middle.X = (temp[k].To.X + temp[k].From.X)/2 - k * 15 - 10;
-                            middle.Y = (temp[k].To.Y + temp[k].From.Y)/2;
-                        }
-                        else
-                        {
-                            middle.X = (temp[k].To.X + temp[k].From.X)/2 + (k - 1) * 15 + 10;
-                            middle.Y = (temp[k].To.Y + temp[k].From.Y)/2;
-                        }
+                        if (k % 2 != 0)     // на нечетных - инкремент отступа
+                            itemp += 14;
 
-                        panel.Children.Add(BezPathFab.GetPath(new Point(temp[k].From.X, temp[k].From.Y), middle,
-                                            new Point(temp[k].To.X, temp[k].To.Y), brush, temp[k].Name, temp[k].Orient));
+                        // k отвечает за сдвиг
+                        panel.Children.Add(BezPathFab.GetPath(new Point(temp[k].From.X, temp[k].From.Y),
+                                            new Point(temp[k].To.X, temp[k].To.Y), brush, Math.Pow(-1, k) * itemp, temp[k].Name, temp[k].Orient));
+
                     }
 
                     temp.Clear();
@@ -108,8 +96,8 @@ namespace WpfApp1
                 {
                     if (edge.From == edge.To)
                     {
-                        panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X-15, edge.From.Y-15), new Point(edge.To.X - 70,
-                                       edge.To.Y + 70), new Point(edge.To.X+15, edge.To.Y+15), brush, edge.Name, false));
+                        panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X, edge.From.Y), new Point((edge.To.X + edge.From.X)/2 - 65,
+                                       (edge.To.Y + edge.To.Y)/2 + 65), new Point(edge.To.X+15, edge.To.Y+15), brush, edge.Name, false));
 
                         break;                      //петля для данной вершины всегда одна
                     }

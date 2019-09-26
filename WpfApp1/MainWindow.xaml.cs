@@ -35,25 +35,22 @@ namespace WpfApp1
         {
             if ((cursor.IsChecked == true))
             {
-                List<Vertex> vertices = new List<Vertex> { new Vertex("школа", 150, 100), new Vertex("дом", 100, 60) };
-                //List<Edge> edges = new List<Edge> { new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], 
-                //    vertices[1]),new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]),
-                //    new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[1], vertices[2]),new Edge("d", vertices[2], vertices[2]),new Edge("d", vertices[2], vertices[1]) };
+                List<Vertex> vertices = new List<Vertex> { new Vertex("школа", 200, 100), new Vertex("дом", 450, 300), new Vertex("магаз", 100, 450) };
+                List<Edge> edges = new List<Edge> { new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0],
+                    vertices[1]),new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[1], vertices[2]),
+                    new Edge("d", vertices[1], vertices[2]), new Edge("d", vertices[1], vertices[2]), new Edge("d", vertices[1], vertices[2]),new Edge("d", vertices[2], vertices[2]),new Edge("d", vertices[2], vertices[1]) };
 
-                List<Edge> edges = new List<Edge> { new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]) };
+                //List<Edge> edges = new List<Edge> { new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]) };
 
                 DrawGraph drgr = new DrawGraph(field, new Graph(vertices, edges));
                 drgr.Draw();
 
-               
-               
-
                 //Vertex vertex = new Vertex("ee", 350, 150);
                 //Vertex vertex2 = new Vertex("lol", 550, 250);
-                //List<Vertex> vertices = new List<Vertex> { vertex, vertex2 };
-                //List<Edge> edges = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2) };
+                //List<Vertex> vertices2 = new List<Vertex> { vertex, vertex2 };
+                //List<Edge> edges2 = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2) };
 
-                //DrawGraph dr = new DrawGraph(field, new Graph(vertices, edges));
+                //DrawGraph dr = new DrawGraph(field, new Graph(vertices2, edges2));
                 //dr.Draw();
 
             }
