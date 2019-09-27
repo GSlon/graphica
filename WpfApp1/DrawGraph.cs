@@ -67,7 +67,7 @@ namespace WpfApp1
                     // в обратную сторону
                     foreach (var edge in data[dataKeys[i]])
                     {
-                        if (edge.To == dataKeys[j])    
+                        if ((edge.Orient) && (edge.To == dataKeys[j]))    // неориет ребро уже добавлено во время прохода по коллекции data[dataKeys[j]]
                         {
                             temp.Add(edge);
                         }
@@ -77,11 +77,12 @@ namespace WpfApp1
                     for (int k = 0; k < temp.Count; k++)
                     {
                         if (k % 2 != 0)     // на нечетных - инкремент отступа
-                            itemp += 14;
+                            itemp += 20;
 
                         // k отвечает за сдвиг
                         panel.Children.Add(BezPathFab.GetPath(new Point(temp[k].From.X, temp[k].From.Y),
-                                            new Point(temp[k].To.X, temp[k].To.Y), brush, Math.Pow(-1, k) * itemp, temp[k].Name, temp[k].Orient));
+                                            new Point(temp[k].To.X, temp[k].To.Y), brush, Math.Pow(-1, k) * itemp, 
+                                            temp[k].Name + " " + temp[k].Weight.ToString() +" " + temp[k].Orient.ToString(), temp[k].Orient));      // вместо name передаем весь tag
 
                     }
 
@@ -97,7 +98,8 @@ namespace WpfApp1
                     if (edge.From == edge.To)
                     {
                         panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X, edge.From.Y), new Point((edge.To.X + edge.From.X)/2 - 65,
-                                       (edge.To.Y + edge.To.Y)/2 + 65), new Point(edge.To.X+15, edge.To.Y+15), brush, edge.Name, false));
+                                       (edge.To.Y + edge.To.Y)/2 + 65), new Point(edge.To.X+15, edge.To.Y+15), brush, 
+                                       edge.Name + " " + edge.Weight.ToString() + " " + edge.Orient.ToString(), false));
 
                         break;                      //петля для данной вершины всегда одна
                     }

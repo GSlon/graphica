@@ -28,11 +28,11 @@ namespace WpfApp1
         public Vertex From { get; set; }
         public Vertex To { get; set; }
 
-        public Edge(string name, Vertex from, Vertex to, int weight = 1, bool orient = false) : base()     // false - не направлено; вес по умолчанию = 1
+        public Edge(string name, Vertex from, Vertex to, bool orient = false, int weight = 1) : base()     // false - не направлено; вес по умолчанию = 1
         {
             Name = name;
-            Weight = weight;
             Orient = orient;
+            Weight = weight;
             From = from;
             To = to;
         }
@@ -41,6 +41,11 @@ namespace WpfApp1
     class Graph
     {
         private Dictionary<Vertex, LinkedList<Edge>> data;      // значение по ключу - только те ребра, началом которых является данный Vertex-ключ
+
+        public Graph()
+        {
+            data = new Dictionary<Vertex, LinkedList<Edge>>(); 
+        }
 
         public Graph(Vertex vertex)
         {
@@ -109,6 +114,56 @@ namespace WpfApp1
         public void SetGraph(Graph graph)
         {
             data = graph.GetGraph();
+        }
+
+        public void DelVerbyName(string name)
+        {
+            var keys = data.Keys;
+            List<Edge> temp = new List<Edge>();
+            foreach (var key in data.Keys)
+            {
+                if (key.Name == name)
+                {
+                    foreach (var edge in data[key])        // удаляем те ребра, которые входят в нашу вершину
+                    {
+                        if (edge.To == edge.From)          // циклы и так удалятся
+                            continue;
+
+                        foreach (var toedge in data[edge.To])
+                        {
+                            if (toedge.To == key)
+                                temp.Add(toedge);
+                        }
+                    }
+
+                    data.Remove(key);
+
+                    for (int i = 0; i < temp.Count; i++)
+                                        data[temp[i].From].Remove(temp[i]);
+
+                    break;      // будем думать, что ключи не дублируются
+                }
+            }
+        }
+
+        public void DelEdgebyName(string name)
+        {
+            List<Edge> temp = new List<Edge>(); 
+            foreach (var values in data.Values)
+            {
+                foreach (var edge in values)
+                {
+                    if (edge.Name == name)
+                    {
+                        temp.Add(edge);
+                    }
+                }
+            }
+
+            for (int i = 0; i < temp.Count; i++)
+            {
+                data[temp[i].From].Remove(temp[i]);
+            }
         }
 
         public Dictionary<Vertex, LinkedList<Edge>> GetGraph()

@@ -65,7 +65,7 @@
             </Grid.ColumnDefinitions>
 
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <Canvas Name ="field" Background="Aqua" MouseLeftButtonDown="Field_MouseLeftButtonDown" ClipToBounds="True" />
+                <Canvas Name ="field" Background="Aqua" MouseLeftButtonDown="Field_MouseLeftButtonDown" ClipToBounds="True" Loaded="Field_Loaded" />
             </ScrollViewer>
                 
             <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"

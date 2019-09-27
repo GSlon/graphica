@@ -19,11 +19,11 @@ namespace WpfApp1
             {
                 Text = txt,
                 Background = brush,
-                Width = 40,
+                Width = 60,
                 Height = 40,
                 TextAlignment = System.Windows.TextAlignment.Center,
-                HorizontalAlignment = System.Windows.HorizontalAlignment.Stretch,
-                VerticalAlignment = System.Windows.VerticalAlignment.Stretch
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
+                VerticalAlignment = System.Windows.VerticalAlignment.Center
             };
 
             BitmapCacheBrush br = new BitmapCacheBrush(text);
@@ -33,13 +33,14 @@ namespace WpfApp1
                 Width = 50,
                 Height = 50,
                 Opacity = 1,    // непрозрачность
-                Stroke = Brushes.Black,
-                Margin = new System.Windows.Thickness(center.X - 25, center.Y - 25, bottom.X, bottom.Y),
+                Stroke = brush,
+                Margin = new System.Windows.Thickness(center.X - 25, center.Y - 25, bottom.X, bottom.Y),    // -25 чтобы рисовать вокруг точки center
                 Tag = txt       // надпись получим через tag       
             };
 
             elps.Fill = br;
 
+            Canvas.SetZIndex(elps, 2);      // 'доминация' над линиями
             return elps;
         }
 
@@ -58,6 +59,7 @@ namespace WpfApp1
 
             BitmapCacheBrush br = new BitmapCacheBrush(text);
 
+            ellipse.Stroke = brush;
             ellipse.Opacity = 1;
             ellipse.Tag = txt;
             ellipse.Fill = br;

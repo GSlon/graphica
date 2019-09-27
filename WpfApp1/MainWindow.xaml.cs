@@ -35,23 +35,26 @@ namespace WpfApp1
         {
             if ((cursor.IsChecked == true))
             {
-                List<Vertex> vertices = new List<Vertex> { new Vertex("школа", 200, 100), new Vertex("дом", 450, 300), new Vertex("магаз", 100, 450) };
-                List<Edge> edges = new List<Edge> { new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0],
-                    vertices[1]),new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[1], vertices[2]),
-                    new Edge("d", vertices[1], vertices[2]), new Edge("d", vertices[1], vertices[2]), new Edge("d", vertices[1], vertices[2]),new Edge("d", vertices[2], vertices[2]),new Edge("d", vertices[2], vertices[1]) };
+                //List<Vertex> vertices = new List<Vertex> { new Vertex("1", 200, 100), new Vertex("22", 500, 100), new Vertex("33", 100, 450), new Vertex("456744", 450, 350) };
+                //List<Edge> edges = new List<Edge> { new Edge("d", vertices[0], vertices[1], true), new Edge("d", vertices[0], vertices[1], true), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0],
+                //    vertices[1]),new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[1], vertices[2]),
+                //    new Edge("d", vertices[1], vertices[2]), new Edge("d", vertices[1], vertices[2], true), new Edge("d", vertices[1], vertices[2], true),new Edge("d", vertices[2], vertices[2], true),new Edge("d", vertices[2], vertices[1]) };
 
                 //List<Edge> edges = new List<Edge> { new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]) };
 
-                DrawGraph drgr = new DrawGraph(field, new Graph(vertices, edges));
-                drgr.Draw();
+                //Graph graph = new Graph(vertices, edges);
+                ////graph.DelVerbyName("школа");
+                //DrawGraph drgr = new DrawGraph(field, graph);
+                //drgr.Draw();
 
-                //Vertex vertex = new Vertex("ee", 350, 150);
-                //Vertex vertex2 = new Vertex("lol", 550, 250);
-                //List<Vertex> vertices2 = new List<Vertex> { vertex, vertex2 };
-                //List<Edge> edges2 = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2) };
+                Vertex vertex = new Vertex("ee", 350, 150);
+                Vertex vertex2 = new Vertex("lol", 150, 450);
+                List<Vertex> vertices2 = new List<Vertex> { vertex, vertex2, new Vertex("lolf", 200, 150) };
+                List<Edge> edges2 = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2, true),
+                 new Edge("t", vertex, vertex2, true),  new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex2, vertex, true)};
 
-                //DrawGraph dr = new DrawGraph(field, new Graph(vertices2, edges2));
-                //dr.Draw();
+                DrawGraph dr = new DrawGraph(field, new Graph(vertices2, edges2));
+                dr.Draw();
 
             }
             else if (vertex.IsChecked == true)
@@ -138,6 +141,11 @@ namespace WpfApp1
         private void Window_Activated(object sender, EventArgs e)
         {
             
+        }
+
+        private void Field_Loaded(object sender, RoutedEventArgs e)
+        {
+           
         }
 
 
