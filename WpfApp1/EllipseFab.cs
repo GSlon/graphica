@@ -13,7 +13,7 @@ namespace WpfApp1
     class EllipseFab
     {
         // ChangeText - через создание нового эллипса (эллипсы являются неизменяемыми)
-        public static Ellipse GetEllipse(Point center, Point bottom, Brush brush, string txt = "")
+        public static Ellipse GetEllipse(Point center, Brush brush, string txt = "")
         {
             TextBlock text = new TextBlock
             {
@@ -23,7 +23,7 @@ namespace WpfApp1
                 Height = 40,
                 TextAlignment = System.Windows.TextAlignment.Center,
                 HorizontalAlignment = System.Windows.HorizontalAlignment.Center,
-                VerticalAlignment = System.Windows.VerticalAlignment.Center
+                VerticalAlignment = System.Windows.VerticalAlignment.Center,
             };
 
             BitmapCacheBrush br = new BitmapCacheBrush(text);
@@ -34,7 +34,7 @@ namespace WpfApp1
                 Height = 50,
                 Opacity = 1,    // непрозрачность
                 Stroke = brush,
-                Margin = new System.Windows.Thickness(center.X - 25, center.Y - 25, bottom.X, bottom.Y),    // -25 чтобы рисовать вокруг точки center
+                Margin = new System.Windows.Thickness(center.X - 25, center.Y - 25, 0, 0),    // -25 чтобы рисовать вокруг точки center
                 Tag = txt       // надпись получим через tag       
             };
 
@@ -63,6 +63,11 @@ namespace WpfApp1
             ellipse.Opacity = 1;
             ellipse.Tag = txt;
             ellipse.Fill = br;
+        }
+
+        public static void ChangeElpsCoord(Ellipse ellipse, Point coord)
+        {
+            ellipse.Margin = new Thickness(coord.X - 25, coord.Y - 25, 0, 0);
         }
     }
 

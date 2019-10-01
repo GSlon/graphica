@@ -124,22 +124,24 @@ namespace WpfApp1
             {
                 if (key.Name == name)
                 {
-                    foreach (var edge in data[key])        // удаляем те ребра, которые входят в нашу вершину
+                    foreach (var values in data.Values)        // удаляем те ребра, которые входят в нашу вершину
                     {
-                        if (edge.To == edge.From)          // циклы и так удалятся
-                            continue;
-
-                        foreach (var toedge in data[edge.To])
+                        foreach (var edge in values)
                         {
-                            if (toedge.To == key)
-                                temp.Add(toedge);
+                            if (edge.To == edge.From)          // циклы и так удалятся
+                                continue;
+                            
+                            if (edge.To == key)
+                            {
+                                temp.Add(edge);
+                            }
                         }
                     }
 
                     data.Remove(key);
 
                     for (int i = 0; i < temp.Count; i++)
-                                        data[temp[i].From].Remove(temp[i]);
+                        data[temp[i].From].Remove(temp[i]);
 
                     break;      // будем думать, что ключи не дублируются
                 }

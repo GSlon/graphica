@@ -23,12 +23,13 @@ namespace WpfApp1
     {
         //DrawGraph drawGraph;
         //Graph graph;
-        
+        bool activ = false;
+
         public MainWindow()
         {
             InitializeComponent();
 
-       
+
         }
 
         private void Field_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -47,65 +48,73 @@ namespace WpfApp1
                 //DrawGraph drgr = new DrawGraph(field, graph);
                 //drgr.Draw();
 
-                Vertex vertex = new Vertex("ee", 350, 150);
-                Vertex vertex2 = new Vertex("lol", 150, 450);
-                List<Vertex> vertices2 = new List<Vertex> { vertex, vertex2, new Vertex("lolf", 200, 150) };
-                List<Edge> edges2 = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2, true),
-                 new Edge("t", vertex, vertex2, true),  new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex2, vertex, true)};
+                Vertex vertex = new Vertex("ee", 100d, 100d);
+                Vertex vertex2 = new Vertex("lol", 400d, 600d);
+                List<Vertex> vertices2 = new List<Vertex> { vertex, vertex2 };
+                List<Edge> edges2 = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), 
+                    new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true) };
+                //    new Edge("t", vertex, vertex2, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true),  new Edge("t", vertex, vertex2, true),
+                //    new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true)
+                //, new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true),
+                // new Edge("t", vertex, vertex2, true),  new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true),
+                //new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true)};
+                 //new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex2, vertex, true),
+                 //new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true)};
 
                 DrawGraph dr = new DrawGraph(field, new Graph(vertices2, edges2));
                 dr.Draw();
+                this.Update_Canvas();
 
             }
             else if (vertex.IsChecked == true)
             {
-                Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), new Point(0, 0), Brushes.Red, "uu");
-                
+                Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), Brushes.Red, "uu");
+
                 el.MouseDown += new MouseButtonEventHandler(Ellipse_MouseDown);
-                
+
                 // el.MouseMove += new MouseEventHandler(mouse_Move);
                 // el.MouseUp += new MouseButtonEventHandler(mouse_Up);
 
                 field.Children.Add(el);
-                var path = BezPathFab.GetPath(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), new Point((e.GetPosition(field).X + 50)/2 + 20,
-                                        (e.GetPosition(field).Y + 100)/2 - 50), new Point(e.GetPosition(field).X - 50, e.GetPosition(field).Y - 75), Brushes.Red,"", true);
+                var path = BezPathFab.GetPath(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), new Point((e.GetPosition(field).X + 50) / 2 + 20,
+                                        (e.GetPosition(field).Y + 100) / 2 - 50), new Point(e.GetPosition(field).X - 50, e.GetPosition(field).Y - 75), Brushes.Red, "", true);
 
-                path.MouseDown += new MouseButtonEventHandler(Path_MouseDown); 
+                path.MouseDown += new MouseButtonEventHandler(Path_MouseDown);
                 field.Children.Add(path);
 
-                
+
 
                 //Path.
                 //field.Children.
                 //new Grid().Children.Add();
             }
-            
-            else if (hand.IsChecked == true )
+
+            else if (hand.IsChecked == true)
             {
-              
+
             }
-           
+
         }
 
         private void Ellipse_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (cursor.IsChecked == true)
-            { 
+            {
                 MessageBox.Show("Сделать петлю");
-               
+
             }
             else if (vertex.IsChecked == true)
             {
-                  MessageBox.Show("здесь уже есть вершина");
-              
+                MessageBox.Show("здесь уже есть вершина");
+
             }
             else if (edge.IsChecked == true)
             {
 
             }
             else if (hand.IsChecked == true)
-            {   
-                
+            {
+                activ = true;
             }
             else if (delete.IsChecked == true)
             {
@@ -114,11 +123,26 @@ namespace WpfApp1
             }
         }
 
+        private void Ellipse_MouseMove(object elps, MouseEventArgs e)
+        {
+            if (activ)
+            {
+                foreach (Ellipse child in field.Children)
+                {
+                    EllipseFab.ChangeEllipse(child, Brushes.Gainsboro, child.Name);
+                    EllipseFab.ChangeElpsCoord(child, new Point(e.GetPosition(field).X, e.GetPosition(field).Y));
+                    
+                    break;
+                }
+            }
+                
+        }
+
         private void Path_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (cursor.IsChecked == true)
             {
-                MessageBox.Show("d");
+                activ = false;
             }
         }
 
@@ -130,6 +154,8 @@ namespace WpfApp1
                 if (field.Children[i].GetType().Name.ToString().Equals("Ellipse"))
                 {
                     field.Children[i].MouseDown += Ellipse_MouseDown;
+                    field.Children[i].MouseMove += Ellipse_MouseMove;
+                    field.Children[i].MouseUp += Ellipse_MouseDown;
                 }
                 else if (field.Children[i].GetType().Name.ToString().Equals("Path"))
                 {

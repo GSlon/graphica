@@ -47,7 +47,7 @@ namespace WpfApp1
             // рисуем вершины
             foreach (var vertex in dataKeys)
             {
-                panel.Children.Add(EllipseFab.GetEllipse(new Point(vertex.X, vertex.Y), new Point(0, 0), brush, vertex.Name));
+                panel.Children.Add(EllipseFab.GetEllipse(new Point(vertex.X, vertex.Y), brush, vertex.Name));
             }
 
             // рисуем ребра
@@ -82,7 +82,7 @@ namespace WpfApp1
                         // k отвечает за сдвиг
                         panel.Children.Add(BezPathFab.GetPath(new Point(temp[k].From.X, temp[k].From.Y),
                                             new Point(temp[k].To.X, temp[k].To.Y), brush, Math.Pow(-1, k) * itemp, 
-                                            temp[k].Name + " " + temp[k].Weight.ToString() +" " + temp[k].Orient.ToString(), temp[k].Orient));      // вместо name передаем весь tag
+                                            temp[k].Name + " " + temp[k].Weight.ToString() + " " + temp[k].Orient.ToString(), temp[k].Orient));      // вместо name передаем весь tag
 
                     }
 
@@ -97,8 +97,8 @@ namespace WpfApp1
                 {
                     if (edge.From == edge.To)
                     {
-                        panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X, edge.From.Y), new Point((edge.To.X + edge.From.X)/2 - 65,
-                                       (edge.To.Y + edge.To.Y)/2 + 65), new Point(edge.To.X+15, edge.To.Y+15), brush, 
+                        panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X, edge.From.Y), new Point((edge.To.X + edge.From.X)/2 - 50,
+                                       (edge.To.Y + edge.To.Y)/2 + 50), new Point(edge.To.X+15, edge.To.Y+15), brush, 
                                        edge.Name + " " + edge.Weight.ToString() + " " + edge.Orient.ToString(), false));
 
                         break;                      //петля для данной вершины всегда одна

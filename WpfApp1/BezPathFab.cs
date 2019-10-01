@@ -12,6 +12,7 @@ namespace WpfApp1
 {
     class BezPathFab
     {
+        // возвращает сдвиг от середины 
         private static Point CalcMiddle(Point from, Point to, double shift)
         {
             Point middle = new Point((from.X + to.X) / 2, (from.Y + to.Y) / 2);     // будем двигать середину отрезка from->to
@@ -39,96 +40,122 @@ namespace WpfApp1
                     middle.X += shift;
                 }
 
-                else                                    // общий вид делится на 2 типа: отрезок образует угол с осью X больше 90 градусов или меньше
-                {                                       // в зависимости от этого будет одинаковое изменение по обеим коорд (less 90) или противоположное по x и по y (more 90)
-                    if ( ((from.Y.CompareTo(to.Y) > 0) && (from.X.CompareTo(to.X) < 0)) ||      
-                         ((from.Y.CompareTo(to.Y) < 0) && (from.X.CompareTo(to.X) > 0)) )     // less 90 -> одинаковое приращение
-                    {
-                        middle.X += shift;
-                        middle.Y += shift;
-                    }
-                    else   // more 90 -> ассиметричное приращ
-                    {
-                        middle.X += shift;
-                        middle.Y -= shift;
-                    }
+                else                                   
+                {                                       
+                    double d = Math.Sqrt(Math.Pow(to.X - from.X, 2) + Math.Pow(to.Y - from.Y, 2));
+                    double Xvec = to.Y - from.Y;    // векторы нормали
+                    double Yvec = from.X - to.X;
+
+                    middle.X += (Xvec / d) * shift; // умножаем на shift единичный вектор нормали
+                    middle.Y += (Yvec / d) * shift;
                 }
-
             }
-
             return middle;
         }
 
+        // middle - середина дуги
         private static Point[] CalcArrow(Point from, Point middle, Point to)   // для расчета координат стрелочки
         {
             // считаем shift, чтобы получить две промежуточных точки 
             Point leastMiddle = new Point((from.X + to.X) / 2, (from.Y + to.Y) / 2);
-            double d = Math.Sqrt(Math.Pow(middle.X - leastMiddle.X, 2) + Math.Pow(middle.Y - leastMiddle.Y, 2));  // длина отрезка
-            //d = (double)Math.Round(d);  // округляем
+            double d = Math.Sqrt(Math.Pow(middle.X - leastMiddle.X, 2) + Math.Pow(middle.Y - leastMiddle.Y, 2));  // длина отрезка, конец которого - угол квадрата в QuadBezier
 
-            // вычисляем сторону, относительно которою находится middle
-            if ((middle.X.CompareTo(leastMiddle.X) < 0) || ((middle.X.CompareTo(leastMiddle.X) == 0) && (middle.Y.CompareTo(leastMiddle.Y) < 0)))
+            Point SupportP1 = new Point();
+            Point SupportP2 = new Point();
+
+            if (d == 0)
             {
-                d *= -1;
+                SupportP1 = CalcMiddle(from, to, 5);
+                SupportP2 = CalcMiddle(from, to, -5);
             }
+            else
+            {
+                double Xvec = middle.X - leastMiddle.X;
+                double Yvec = middle.Y - leastMiddle.Y;
 
-            Point SupportP1 = CalcMiddle(from, to, d + Math.Sign(d) * 10);   
-            Point SupportP2 = CalcMiddle(from, to, d + Math.Sign(d) * 10);   
+                SupportP1.X = middle.X + (Xvec / d) * 5;
+                SupportP1.Y = middle.Y + (Yvec / d) * 5;
+                SupportP2.X = middle.X - (Xvec / d) * 5;
+                SupportP2.Y = middle.Y - (Yvec / d) * 5;
+            }
 
             // осталось выбрать правильное направление стрелки
             Point SupportP3;
-            if ((to.X.CompareTo(from.X) > 0) || ((to.X.CompareTo(from.X) == 0) && (to.Y.CompareTo(from.Y) > 0)))
+            int shift = -8;     // отвечает за направление
+            if ((to.X.CompareTo(from.X) < 0) || ((to.X.CompareTo(from.X) == 0) && (to.Y.CompareTo(from.Y) < 0)))
             {
-                SupportP3 = CalcMiddle(SupportP1, SupportP2, 20);   // направление определяет shift относительно двух SupportP
+                shift *= -1;
+            }
+
+            if (SupportP2.Y.CompareTo(SupportP1.Y) < 0)         // инверсия, когда вспомогательные точки поменялись местами
+            {
+                SupportP3 = CalcMiddle(SupportP1, SupportP2, shift);    // нужный эффект - движение "снизу вверх"
             }
             else
-                SupportP3 = CalcMiddle(SupportP1, SupportP2, -20);
+            {
+                SupportP3 = CalcMiddle(SupportP2, SupportP1, shift);
+            }
 
             return new Point[3] { SupportP1, SupportP3, SupportP2 };
         }
 
+        // считает значение уравнения кривой Безье (middle - середина дуги, а не опорная точка! ее мы сейчас и ищем)
+        private static Point BezValues(Point from, Point middle, Point to, double t)    // t - параметр
+        {
+            double x = (middle.X - Math.Pow(1 - t, 2) * from.X - t * t * to.X) / (2 * (1 - t) * t);
+            double y = (middle.Y - Math.Pow(1 - t, 2) * from.Y - t * t * to.Y) / (2 * (1 - t) * t);
+
+            return new Point(x, y);
+        }
+
+        // middle - середина дуги (надо преобразовать в угол квадрата)
         public static Path GetPath(Point from, Point middle, Point to, Brush brush, string name = "",  bool orient = false)     // false - не направ
         {
             PathGeometry pathGeometry = new PathGeometry();
-            
-            PathFigure bezfigure = new PathFigure();    // фигура, состоящая из сегмента (Безье)
-            bezfigure.StartPoint = from;
-            bezfigure.Segments.Add(new QuadraticBezierSegment(middle, to, true));
+
+            PathFigure bezfigure = new PathFigure
+            {
+                StartPoint = from
+            };    // фигура, состоящая из сегмента (Безье)
+
+            bezfigure.Segments.Add(new QuadraticBezierSegment(BezValues(from, middle, to, 0.5), to, true));   // преобразовали в значение для угла
             pathGeometry.Figures.Add(bezfigure);
 
             if (orient)                    
             {
                 Point[] info = CalcArrow(from, middle, to);
 
-                //LineSegment line1 = new LineSegment(info[1], true);
-                //LineSegment line2 = new LineSegment(info[2], true);
+                LineSegment line1 = new LineSegment(info[1], true);
+                LineSegment line2 = new LineSegment(info[2], true);
 
-                //PathFigure linesfig = new PathFigure();
-                //linesfig.StartPoint = info[0];
-                //linesfig.Segments.Add(line1);
-                //linesfig.Segments.Add(line2);
+                PathFigure linesfig = new PathFigure
+                {
+                    StartPoint = info[0]
+                };
 
-                PathFigure linesfig = new PathFigure();
-                linesfig.StartPoint = info[0];
-                //linesfig.Segments.Add(new segm);
+                linesfig.Segments.Add(line1);
+                linesfig.Segments.Add(line2);
 
                 pathGeometry.Figures.Add(linesfig);
+                //pathGeometry.Transform = new SkewTransform(15,15);
             }
 
-
-            Path path = new Path();
-            path.Tag = name;
-            path.Data = pathGeometry;
-            path.Stroke = brush;
-            path.StrokeThickness = 1.5;
+            Path path = new Path
+            {
+                Tag = name,
+                Data = pathGeometry,
+                Stroke = brush,
+                StrokeThickness = 1.5
+            };
 
             return path;
         }
 
+
         // shift - сдвиг от середины между from и to 
         public static Path GetPath(Point from, Point to, Brush brush, double shift, string name = "", bool orient = false)     // false - не направ
         {
-            return GetPath(from, CalcMiddle(from, to, shift), to, brush, name, orient);
+            return GetPath(from, CalcMiddle(from, to, shift), to, brush, name, orient); 
         }
 
         public static void ChangePath(Path path, Point from, Point middle, Point to, Brush brush, string name = "", bool orient = false)
