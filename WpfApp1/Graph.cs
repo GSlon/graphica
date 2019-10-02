@@ -53,7 +53,7 @@ namespace WpfApp1
             data.Add(vertex, new LinkedList<Edge>());
         }
 
-        // петля
+        // петля (всего одна вершина указана)
         public Graph(Vertex vertex, Edge edge)
         {
             if (edge.From != edge.To)

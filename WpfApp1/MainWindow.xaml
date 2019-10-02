@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="Graphs" Height="450" Width="800" Activated="Window_Activated">
+        Title="Graphs" Height="450" Width="800">
 
     <DockPanel>
         <Menu DockPanel.Dock="Top" Background="#FFFBFB90" >
@@ -36,24 +36,24 @@
             <Separator></Separator>
             <Separator></Separator>
 
-            <RadioButton GroupName="Mode" Name="cursor" IsChecked="True">
-                <Image Source="src/cursor.jpg"/>
+            <RadioButton GroupName="Mode" Name="cursor" IsChecked="True" >
+                <Image Source="src/cursor.jpg" MouseLeftButtonDown="Choose_MouseLeftButtonDown" />
             </RadioButton>
-            
-            <RadioButton GroupName="Mode" Name="vertex" ToolTip="vertex">
-                <Image Source="src/Vertex.jpg"/>
+
+            <RadioButton GroupName="Mode" Name="vertex" ToolTip="vertex" >
+                <Image Source="src/Vertex.jpg" MouseLeftButtonDown="Choose_MouseLeftButtonDown"/>
             </RadioButton>
-            
-            <RadioButton GroupName="Mode" Name="edge">
-                <Image Source="src/edge.jpg"/>
+
+            <RadioButton GroupName="Mode" Name="edge" >
+                <Image Source="src/edge.jpg" MouseLeftButtonDown="Choose_MouseLeftButtonDown"/>
             </RadioButton>
-            
-            <RadioButton GroupName="Mode" Name="hand">
-                <Image Source="src/l_pr.jpg"/>
+
+            <RadioButton GroupName="Mode" Name="hand" >
+                <Image Source="src/l_pr.jpg" MouseLeftButtonDown="Choose_MouseLeftButtonDown"/>
             </RadioButton>
-            
-            <RadioButton GroupName="Mode" Name="delete">
-                <Image Source="src/delete.jpg"/>
+
+            <RadioButton GroupName="Mode" Name="delete" >
+                <Image Source="src/delete.jpg" MouseLeftButtonDown="Choose_MouseLeftButtonDown"/>
             </RadioButton>
         </ToolBar>
 
@@ -65,7 +65,7 @@
             </Grid.ColumnDefinitions>
 
             <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <Canvas Name ="field" Background="Aqua" MouseLeftButtonDown="Field_MouseLeftButtonDown" ClipToBounds="True" Loaded="Field_Loaded" />
+                <Canvas Name ="field" Background="Aqua" MouseLeftButtonDown="Field_MouseLeftButtonDown" ClipToBounds="True" />
             </ScrollViewer>
                 
             <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"

@@ -23,195 +23,354 @@ namespace WpfApp1
     {
         //DrawGraph drawGraph;
         //Graph graph;
-        bool activ = false;
+        bool capturedElps = false;
+        bool capturedPath = false;
+        Point Start;
 
         public MainWindow()
         {
             InitializeComponent();
 
+        }
 
+        // mode: 1 - выходим из; 2 - входим; 3 - выходим и входим
+        private List<Path> FindPathes(Point point, int mode)
+        {
+            List<Path> templist = new List<Path>();
+            for (int i = 0; i < field.Children.Count; i++)
+            {
+                if (!(field.Children[i] is Path path))
+                    continue;
+
+                var data = (PathGeometry)path.Data;
+                var bezier = (QuadraticBezierSegment)data.Figures[0].Segments[0];
+
+                switch (mode)
+                {
+                    case 1:
+                        if (data.Figures[0].StartPoint == point)
+                        {
+                            templist.Add(path);
+                        }
+                        break;
+
+                    case 2:
+                        if (bezier.Point2 == point)
+                        {
+                            templist.Add(path);
+                        }
+                        break;
+
+                    case 3:
+                        if ((data.Figures[0].StartPoint == point) || (bezier.Point2 == point))
+                        {
+                            templist.Add(path);
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            return templist;
+        }
+
+        // mode: 1 - из/в; 2 - в/из; 3 - неважно
+        private List<Path> FindPathes(Point start, Point end, int mode)
+        {
+            List<Path> templist = new List<Path>();
+            for (int i = 0; i < field.Children.Count; i++)
+            {
+                if (!(field.Children[i] is Path path))
+                    continue;
+
+                var data = (PathGeometry)path.Data;
+                var bezier = (QuadraticBezierSegment)data.Figures[0].Segments[0];
+
+                switch (mode)
+                {
+                    case 1:
+                        if ((data.Figures[0].StartPoint == start) && (bezier.Point2 == end))
+                        {
+                            templist.Add(path);
+                        }
+                        break;
+
+                    case 2:
+                        if ((data.Figures[0].StartPoint == end) && (bezier.Point2 == start))
+                        {
+                            templist.Add(path);
+                        }
+                        break;
+
+                    case 3:
+                        if (((data.Figures[0].StartPoint == start) && (bezier.Point2 == end)) ||
+                                ((data.Figures[0].StartPoint == end) && (bezier.Point2 == start)))
+                        {
+                            templist.Add(path);
+                        }
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            return templist;
+        }
+
+        private void AddPath(Point start, Point end)
+        {
+            if (start == end)   // узел  
+            {
+                end = new Point(end.X + 15, end.Y + 15);    // новый end для узла
+
+                if (FindPathes(start, end, 3).Count == 0)
+                    field.Children.Add(BezPathFab.GetPath(start, new Point((start.X + end.X) / 2 - 50,
+                                       (start.Y + end.Y) / 2 + 50), end, Brushes.Black,
+                                        PathCount().ToString() + " 1 false", false));
+                else
+                    return;
+
+            }
+            else
+            {
+                int k = 1;
+                int count = FindPathes(start, end, 3).Count;
+                ++count;
+
+                // изменение направления вектора меняет знак приращения
+                if (start.X.CompareTo(end.X) > 0)
+                    k = -1;
+
+                field.Children.Add(BezPathFab.GetPath(start, end, Brushes.Black, Math.Pow(-1, count) * (count / 2) * 20 * k, PathCount().ToString() +
+                                                    " " + "1 " + "true", true));
+            }
+        }
+
+        private void RepaintVertPair(Point start, Point end)
+        {
+            var edges = FindPathes(start, end, 3);
+
+            int k = 1;  // направление вектора определяет направление shift
+            for (int i = 0; i < edges.Count; i++)
+            {
+                field.Children.Remove(edges[i]);
+
+                var data = (PathGeometry)edges[i].Data;
+                var bezier = (QuadraticBezierSegment)data.Figures[0].Segments[0];
+
+                if (data.Figures[0].StartPoint.X.CompareTo(bezier.Point2.X) > 0)
+                    k = -1;
+                else
+                    k = 1;
+
+                field.Children.Add(BezPathFab.GetPath(data.Figures[0].StartPoint, bezier.Point2, Brushes.Black, Math.Pow(-1, i) * ((i+1) / 2) * 20 * k, edges[i].Tag.ToString(),
+                                            bool.Parse(edges[i].Tag.ToString().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[2])));
+            }
+        }
+
+        private void ChangeVertCoord(Point start, Point change)
+        {
+            var edgesFrom = FindPathes(start, 1);
+            var edgesTo = FindPathes(start, 2);
+
+            for (int i = 0; i < edgesFrom.Count; i++)
+            {
+                field.Children.Remove(edgesFrom[i]);
+
+                var data = (PathGeometry)edgesFrom[i].Data;
+                var bezier = (QuadraticBezierSegment)data.Figures[0].Segments[0];
+
+                field.Children.Add(BezPathFab.GetPath(change, bezier.Point2, Brushes.Black, Math.Pow(-1, i) * (i / 2) * 20, edgesFrom[i].Tag.ToString(),
+                                            bool.Parse(edgesFrom[i].Tag.ToString().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[2])));
+            }
+
+            int j = edgesFrom.Count;
+            for (int i = 0; i < edgesTo.Count; i++)
+            {
+                field.Children.Remove(edgesTo[i]);
+
+                var data = (PathGeometry)edgesTo[i].Data;
+                var bezier = (QuadraticBezierSegment)data.Figures[0].Segments[0];
+
+                field.Children.Add(BezPathFab.GetPath(data.Figures[0].StartPoint, change, Brushes.Black, Math.Pow(-1, j + 1) * ((j + 1) / 2) * 20, edgesTo[i].Tag.ToString(),
+                                            bool.Parse(edgesTo[i].Tag.ToString().Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)[2])));
+                ++j;
+            }
+        }
+
+        private void DeleteEdges(Point center)
+        {
+            var edges = FindPathes(center, 3);
+
+            for (int i = 0; i < edges.Count; i++)
+                field.Children.Remove(edges[i]);
+        }
+
+        private int PathCount()
+        {
+            int count = 0;
+            for (int i = 0; i < field.Children.Count; i++)
+            {
+                if (!(field.Children[i] is Path path))
+                    continue;
+
+                ++count;
+            }
+
+            return count;
+        }
+
+        private int EllpsCount()
+        {
+            int count = 0;
+            for (int i = 0; i < field.Children.Count; i++)
+            {
+                if (!(field.Children[i] is Ellipse elps))
+                    continue;
+
+                ++count;
+            }
+
+            return count;
         }
 
         private void Field_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            if ((cursor.IsChecked == true))
-            {
-                //List<Vertex> vertices = new List<Vertex> { new Vertex("1", 200, 100), new Vertex("22", 500, 100), new Vertex("33", 100, 450), new Vertex("456744", 450, 350) };
-                //List<Edge> edges = new List<Edge> { new Edge("d", vertices[0], vertices[1], true), new Edge("d", vertices[0], vertices[1], true), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0],
-                //    vertices[1]),new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[0], vertices[1]), new Edge("d", vertices[1], vertices[2]),
-                //    new Edge("d", vertices[1], vertices[2]), new Edge("d", vertices[1], vertices[2], true), new Edge("d", vertices[1], vertices[2], true),new Edge("d", vertices[2], vertices[2], true),new Edge("d", vertices[2], vertices[1]) };
-
-                //List<Edge> edges = new List<Edge> { new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]), new Edge("f", vertices[0], vertices[1]) };
-
-                //Graph graph = new Graph(vertices, edges);
-                ////graph.DelVerbyName("школа");
-                //DrawGraph drgr = new DrawGraph(field, graph);
-                //drgr.Draw();
-
-                Vertex vertex = new Vertex("ee", 100d, 100d);
-                Vertex vertex2 = new Vertex("lol", 400d, 600d);
-                List<Vertex> vertices2 = new List<Vertex> { vertex, vertex2 };
-                List<Edge> edges2 = new List<Edge> { new Edge("d", vertex, vertex), new Edge("d", vertex2, vertex2), new Edge("t", vertex, vertex2), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), 
-                    new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true) };
-                //    new Edge("t", vertex, vertex2, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true),  new Edge("t", vertex, vertex2, true),
-                //    new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true)
-                //, new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true),
-                // new Edge("t", vertex, vertex2, true),  new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true),
-                //new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true)};
-                 //new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex, vertex2, true), new Edge("t", vertex2, vertex, true),
-                 //new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true), new Edge("t", vertex2, vertex, true)};
-
-                DrawGraph dr = new DrawGraph(field, new Graph(vertices2, edges2));
-                dr.Draw();
-                this.Update_Canvas();
-
-            }
+            if (edge.IsChecked == true)
+                capturedPath = false;
+            
             else if (vertex.IsChecked == true)
             {
-                Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), Brushes.Red, "uu");
-
-                el.MouseDown += new MouseButtonEventHandler(Ellipse_MouseDown);
-
-                // el.MouseMove += new MouseEventHandler(mouse_Move);
-                // el.MouseUp += new MouseButtonEventHandler(mouse_Up);
+                Ellipse el = EllipseFab.GetEllipse(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), Brushes.Red, EllpsCount().ToString());
 
                 field.Children.Add(el);
-                var path = BezPathFab.GetPath(new Point(e.GetPosition(field).X, e.GetPosition(field).Y), new Point((e.GetPosition(field).X + 50) / 2 + 20,
-                                        (e.GetPosition(field).Y + 100) / 2 - 50), new Point(e.GetPosition(field).X - 50, e.GetPosition(field).Y - 75), Brushes.Red, "", true);
-
-                path.MouseDown += new MouseButtonEventHandler(Path_MouseDown);
-                field.Children.Add(path);
-
-
-
-                //Path.
-                //field.Children.
-                //new Grid().Children.Add();
+                Update_Canvas();
             }
-
-            else if (hand.IsChecked == true)
-            {
-
-            }
-
         }
 
         private void Ellipse_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (cursor.IsChecked == true)
-            {
-                MessageBox.Show("Сделать петлю");
+            e.Handled = true;   // отключили передачу события к восходящим элементам
 
-            }
-            else if (vertex.IsChecked == true)
-            {
-                MessageBox.Show("здесь уже есть вершина");
+            if (!(sender is Ellipse elps))
+                return;
 
-            }
-            else if (edge.IsChecked == true)
+            Point center = new Point(elps.Margin.Left + 25, elps.Margin.Top + 25);
+            if (edge.IsChecked == true)
             {
-
+                if (capturedPath)
+                {
+                    AddPath(Start, center);
+                    Update_Canvas();
+                    capturedPath = false;
+                }
+                else
+                {
+                    Start = center;
+                    capturedPath = true;
+                }
             }
             else if (hand.IsChecked == true)
             {
-                activ = true;
+                capturedElps = true;
             }
             else if (delete.IsChecked == true)
             {
-                var el = (Ellipse)sender;
-                field.Children.Remove(el);
+                DeleteEdges(center);
+                field.Children.Remove(elps);
             }
         }
 
-        private void Ellipse_MouseMove(object elps, MouseEventArgs e)
+        //
+        private void Ellipse_MouseMove(object sender, MouseEventArgs e)
         {
-            if (activ)
+            e.Handled = true;
+
+            if (capturedElps)
             {
-                foreach (Ellipse child in field.Children)
-                {
-                    EllipseFab.ChangeEllipse(child, Brushes.Gainsboro, child.Name);
-                    EllipseFab.ChangeElpsCoord(child, new Point(e.GetPosition(field).X, e.GetPosition(field).Y));
-                    
-                    break;
-                }
+                if (!(sender is Ellipse elps))
+                    return;
+
+                Point newCoord = new Point(e.GetPosition(field).X , e.GetPosition(field).Y );
+                Point oldCoord = new Point(elps.Margin.Left + 25, elps.Margin.Top + 25);
+
+                ChangeVertCoord(oldCoord, newCoord);
+                EllipseFab.ChangeElpsCoord((Ellipse)sender, new Point(e.GetPosition(field).X, e.GetPosition(field).Y));
+
+                Update_Canvas();
             }
-                
+        }
+        //
+
+        private void Ellipse_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            capturedElps = false;
+        }
+       
+        private void Ellipse_MouseLeave(object sender, MouseEventArgs e)
+        {
+            capturedElps = false;
         }
 
         private void Path_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (cursor.IsChecked == true)
+            e.Handled = true;
+
+            if (!(sender is Path path))
+                return;
+
+            if (hand.IsChecked == true)
+            { 
+
+            }
+            else if (delete.IsChecked == true)
             {
-                activ = false;
+                field.Children.Remove(path);
+                var data = (PathGeometry)path.Data;
+                var bezier = (QuadraticBezierSegment)data.Figures[0].Segments[0];
+                RepaintVertPair(data.Figures[0].StartPoint, bezier.Point2);
+                Update_Canvas();
             }
         }
 
-        // новым фигурам заполняем делегаты 
+        private void Path_MouseMove(object sender, MouseEventArgs e)
+        {
+
+        }
+
+        private void Path_MouseMove(object sender, MouseButtonEventArgs e)
+        {
+
+        }
+
+        // новым фигурам заполняем делегаты (используй после Draw)
         private void Update_Canvas()
         {
             for (int i = 0; i < field.Children.Count; i++)
             {
                 if (field.Children[i].GetType().Name.ToString().Equals("Ellipse"))
                 {
-                    field.Children[i].MouseDown += Ellipse_MouseDown;
-                    field.Children[i].MouseMove += Ellipse_MouseMove;
-                    field.Children[i].MouseUp += Ellipse_MouseDown;
+                    field.Children[i].MouseDown += new MouseButtonEventHandler(Ellipse_MouseDown);
+                    field.Children[i].MouseMove += new MouseEventHandler(Ellipse_MouseMove);
+                    field.Children[i].MouseUp += new MouseButtonEventHandler(Ellipse_MouseUp);
+                    field.Children[i].MouseLeave += new MouseEventHandler(Ellipse_MouseLeave);
                 }
                 else if (field.Children[i].GetType().Name.ToString().Equals("Path"))
                 {
-                    field.Children[i].MouseDown += Path_MouseDown;
+                    field.Children[i].MouseDown += new MouseButtonEventHandler(Path_MouseDown);
+
+                    //
                 }
             }
         }
 
-        private void Window_Activated(object sender, EventArgs e)
+        private void Choose_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            
+            capturedPath = false;
+            capturedElps = false;
         }
-
-        private void Field_Loaded(object sender, RoutedEventArgs e)
-        {
-           
-        }
-
-
-        /*
-        protected void mouse_Move(object sender, MouseEventArgs e)
-        {
-            if (ui == null)
-                return;
-
-            ui.SetValue(Canvas.LeftProperty, e.GetPosition(this).X - p.Value.X - 70);
-            ui.SetValue(Canvas.TopProperty, e.GetPosition(this).Y - p.Value.Y - 70);
-        }
-
-        protected void mouse_Up(object sender, MouseButtonEventArgs e)
-        {
-            ui = null;
-        }
-        */
-        /*
-           private void ell_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-           {
-               ui = sender as UIElement;
-               p = e.GetPosition(ui);
-
-           }
-
-           private void ell_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-           {
-               ui = null;
-           }
-
-           private void ell_MouseMove(object sender, MouseEventArgs e)
-           {
-               if (ui == null)
-                   return;
-
-               ui.SetValue(Canvas.LeftProperty, e.GetPosition(this).X - p.Value.X);
-               ui.SetValue(Canvas.TopProperty, e.GetPosition(this).Y - p.Value.Y);
-           }
-           */
-
     }
 }

@@ -145,7 +145,7 @@ namespace WpfApp1
                 Tag = name,
                 Data = pathGeometry,
                 Stroke = brush,
-                StrokeThickness = 1.5
+                StrokeThickness = 2
             };
 
             return path;
@@ -164,9 +164,9 @@ namespace WpfApp1
         }
 
         // shift - сдвиг от середины между from и to
-        public static void ChangePath(Path path, Point from, Point to, double shift, Brush brush, string name = "")
+        public static void ChangePath(Path path, Point from, Point to, double shift, Brush brush, string name = "", bool orient = false)
         {
-            ChangePath(path, from, CalcMiddle(from, to, shift), to, brush, name);
+            ChangePath(path, from, CalcMiddle(from, to, shift), to, brush, name, orient);
         }
     }
 }
