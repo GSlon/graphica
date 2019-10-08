@@ -57,3 +57,7 @@ D:\Git_proj\Graphs\graphica\WpfApp1\obj\Debug\WpfApp1.csproj.GenerateResource.ca
 D:\Git_proj\Graphs\graphica\WpfApp1\obj\Debug\WpfApp1.csproj.CoreCompileInputs.cache
 D:\Git_proj\Graphs\graphica\WpfApp1\obj\Debug\WpfApp1.exe
 D:\Git_proj\Graphs\graphica\WpfApp1\obj\Debug\WpfApp1.pdb
+F:\Repos\Graphiz2\WpfApp1\obj\Debug\EditWindow.g.cs
+F:\Repos\Graphiz2\WpfApp1\obj\Debug\EditWindow.baml
+F:\Repos\Graphiz2\WpfApp1\obj\Debug\TextWindow.g.cs
+F:\Repos\Graphiz2\WpfApp1\obj\Debug\TextWindow.baml

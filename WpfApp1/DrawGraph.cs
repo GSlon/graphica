@@ -11,32 +11,9 @@ using System.Windows;
 namespace WpfApp1
 {
     class DrawGraph
-    {
-        Panel panel;
-        Graph graph;
-        Brush brush;
-
-        public DrawGraph(Panel panl, Graph gr)
-        {
-            panel = panl;
-            graph = gr;
-            brush = Brushes.Red;
-        }
-
-        public DrawGraph(Panel panl, Graph gr, Brush br)
-        {
-            panel = panl;
-            graph = gr;
-            brush = br;
-        }
-
-        public void Clear()
-        {
-            panel.Children.Clear();
-        }
-        
+    {        
         // рисуй все ключи (вершины), а затем только рисуй ребра, проходя по значениям
-        public void Draw()
+        public static void Draw(Panel panel, Graph graph, Brush brush)
         {
             panel.Children.Clear(); 
 
@@ -77,13 +54,12 @@ namespace WpfApp1
                     for (int k = 0; k < temp.Count; k++)
                     {
                         if (k % 2 != 0)     // на нечетных - инкремент отступа
-                            itemp += 20;
+                            itemp += 40;
 
                         // k отвечает за сдвиг
                         panel.Children.Add(BezPathFab.GetPath(new Point(temp[k].From.X, temp[k].From.Y),
                                             new Point(temp[k].To.X, temp[k].To.Y), brush, Math.Pow(-1, k) * itemp, 
-                                            temp[k].Name + " " + temp[k].Weight.ToString() + " " + temp[k].Orient.ToString(), temp[k].Orient));      // вместо name передаем весь tag
-
+                                            temp[k].Name , temp[k].Orient, temp[k].Weight));      // вместо name передаем весь tag
                     }
 
                     temp.Clear();
@@ -97,9 +73,8 @@ namespace WpfApp1
                 {
                     if (edge.From == edge.To)
                     {
-                        panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X, edge.From.Y), new Point((edge.To.X + edge.From.X)/2 - 50,
-                                       (edge.To.Y + edge.To.Y)/2 + 50), new Point(edge.To.X+15, edge.To.Y+15), brush, 
-                                       edge.Name + " " + edge.Weight.ToString() + " " + edge.Orient.ToString(), false));
+                        panel.Children.Add(BezPathFab.GetPath(new Point(edge.From.X, edge.From.Y), new Point(edge.To.X, edge.To.Y), brush, 
+                                             5, edge.Name, false, edge.Weight));
 
                         break;                      //петля для данной вершины всегда одна
                     }

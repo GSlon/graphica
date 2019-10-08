@@ -7,6 +7,29 @@
         mc:Ignorable="d"
         Title="Graphs" Height="450" Width="800">
 
+    <Window.Resources>
+        <ContextMenu x:Key="ContMenuElps">
+            <MenuItem  Header="Make a loop" Click="MakeLoop" CommandParameter="{Binding Path=PlacementTarget.ChangeCommand, 
+                RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+            <Separator />
+            <MenuItem Header="Remove the loop" Click="DeleteLoop" />
+            <Separator />
+            <MenuItem Header="Change Text" Click="ChangeText" />
+        </ContextMenu>
+        
+        <ContextMenu x:Key="ContMenuPath">
+            <MenuItem Header="Сhange direction"  Name="orient" Click="ChangeDirection"/>
+            <Separator />
+            <MenuItem Header="No direction" Name ="noorient" Click="ChangeDirection"/>
+            <Separator />
+            <MenuItem Header="Change weight" Click="ChangeWeight"/>
+        </ContextMenu>
+
+        <ContextMenu x:Key="ContMenuLoop">
+            <MenuItem Header="Change weight" />
+        </ContextMenu>
+    </Window.Resources>
+    
     <DockPanel>
         <Menu DockPanel.Dock="Top" Background="#FFFBFB90" >
             <MenuItem Header="File">
