@@ -16,7 +16,7 @@ namespace WpfApp1
         public static Ellipse GetEllipse(Point center, Brush brush, string txt)
         {
             if (txt.Trim().Length == 0)
-                txt = "def";
+                throw new Exception("name is empty");
 
             TextBlock text = new TextBlock
             {

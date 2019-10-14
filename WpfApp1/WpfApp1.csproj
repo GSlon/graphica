@@ -58,6 +58,7 @@
     <Compile Include="BezPathFab.cs" />
     <Compile Include="ConvertGraph.cs" />
     <Compile Include="DrawGraph.cs" />
+    <Compile Include="Edition.cs" />
     <Compile Include="EllipseFab.cs" />
     <Compile Include="EditWindow.xaml.cs">
       <DependentUpon>EditWindow.xaml</DependentUpon>

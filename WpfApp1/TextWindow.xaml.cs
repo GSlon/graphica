@@ -30,7 +30,7 @@ namespace WpfApp1
         {
             if ((EditBox.Text.Trim().Length != 0) && (EditBox.Text.Length < 8))
             {
-                text = EditBox.Text;
+                text = EditBox.Text.Trim();
                 DialogResult = true;
             }
             else

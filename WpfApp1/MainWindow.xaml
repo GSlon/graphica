@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
         mc:Ignorable="d"
-        Title="Graphs" Height="450" Width="800">
+        Title="Graphs" Height="450" Width="800" Closing="Window_Closing">
 
     <Window.Resources>
         <ContextMenu x:Key="ContMenuElps">
@@ -14,7 +14,7 @@
             <Separator />
             <MenuItem Header="Remove the loop" Click="DeleteLoop" />
             <Separator />
-            <MenuItem Header="Change Text" Click="ChangeText" />
+            <MenuItem Header="Rename" Click="ChangeText" />
         </ContextMenu>
         
         <ContextMenu x:Key="ContMenuPath">
@@ -26,33 +26,34 @@
         </ContextMenu>
 
         <ContextMenu x:Key="ContMenuLoop">
-            <MenuItem Header="Change weight" />
+            <MenuItem Header="Change weight" Click="ChangeWeight"/>
         </ContextMenu>
     </Window.Resources>
     
     <DockPanel>
         <Menu DockPanel.Dock="Top" Background="#FFFBFB90" >
-            <MenuItem Header="File">
-                <MenuItem Header="_Input" ></MenuItem>
-                <MenuItem Header="_Save"></MenuItem>
-                
+            <MenuItem Header="_File">
+                <MenuItem Header="_Open" Click="OpenGraph"></MenuItem>
+                <MenuItem Header="_Save" Click="SaveGraph"></MenuItem>
+                <MenuItem Header="_Save Png" Click="SaveCanvas"></MenuItem>
+
                 <Separator />
                 
                 <MenuItem Header="_Exit" />
             </MenuItem>
             
+            <MenuItem Header="_Tasks" ></MenuItem>
             <MenuItem Header="?" ></MenuItem>
-            <MenuItem Header="???" ></MenuItem>
         </Menu>
 
         <Separator DockPanel.Dock="Top"></Separator>
 
         <ToolBar DockPanel.Dock="Top" Height="45">
-            <Button Content="Undo">
+            <Button Content="Undo" Click="Undo_Click">
                 
             </Button>
 
-            <Button Content="Redo">
+            <Button Content="Redo" Click="Redo_Click">
                 
             </Button>
 

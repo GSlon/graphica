@@ -30,11 +30,16 @@ namespace WpfApp1
         {
             if (Int16.TryParse(EditBox.Text, out Weight))
             {
-                DialogResult = true; 
+                if (Weight <= 0)
+                {
+                    MessageBox.Show("Enter the integer > 0");
+                }
+                else
+                    DialogResult = true; 
             }
             else
             {
-                MessageBox.Show("Please, enter the integer");
+                MessageBox.Show("Enter the integer");
             }
         }
 

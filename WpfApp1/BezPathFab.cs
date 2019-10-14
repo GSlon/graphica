@@ -332,8 +332,8 @@ namespace WpfApp1
             // вес
             FormattedText formatText = new FormattedText(weight.ToString(), CultureInfo.CurrentCulture,
                                                      FlowDirection.LeftToRight,
-                                                     new Typeface(new FontFamily("Colibri"), FontStyles.Normal, FontWeights.UltraLight, FontStretches.Normal),
-                                                     12, Brushes.Black);
+                                                     new Typeface(new FontFamily("Colibri"), FontStyles.Oblique, FontWeights.UltraLight, FontStretches.UltraCondensed),
+                                                     13, Brushes.Black);
 
             Point center = new Point();
             if (from.Equals(to))
