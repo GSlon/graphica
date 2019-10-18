@@ -33,6 +33,7 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top" Background="#FFFBFB90" >
             <MenuItem Header="_File">
+                <MenuItem Header="_New" Click="New_Click" ></MenuItem>
                 <MenuItem Header="_Open" Click="OpenGraph"></MenuItem>
                 <MenuItem Header="_Save" Click="SaveGraph"></MenuItem>
                 <MenuItem Header="_Save Png" Click="SaveCanvas"></MenuItem>
@@ -88,10 +89,16 @@
                 <ColumnDefinition Width="0.25*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <Canvas Name ="field" Background="Aqua" MouseLeftButtonDown="Field_MouseLeftButtonDown" ClipToBounds="True" />
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <TabControl x:Name="canvs" Grid.Column="0" MouseDoubleClick="TabDoubleClick" SelectionChanged="Сanvs_SelectionChanged" >
+                    <TabItem>
+                        <TabItem.Header>1</TabItem.Header>
+
+                        <Canvas Name ="firstField" Background="Aqua" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" ClipToBounds="True" />
+                    </TabItem>
+                </TabControl>
             </ScrollViewer>
-                
+
             <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"
                 HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="WhiteSmoke">
             </GridSplitter>

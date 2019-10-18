@@ -16,41 +16,105 @@ using System.Windows.Shapes;
 
 namespace WpfApp1
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
+    struct Field
+    {
+        public Canvas field;
+        public Edition edition;     // матрица смежности и граф пусть тоже будут там (не придется пересчитывать)
+
+        public bool capturedElps;
+        public bool HasPathStart;
+        public Point Start;
+        public HashSet<string> names;
+        public bool WasSaved;                  // предлагать ли сохранение
+
+        public Field(Canvas canvas)
+        {
+            field = canvas;
+
+            edition = new Edition(new Graph());
+            capturedElps = false;
+            HasPathStart = false;
+            names = new HashSet<string>();
+            WasSaved = false;
+            Start = new Point(0,0);
+        }
+    }
 
     public partial class MainWindow : Window
     {
-        //LinkedList<KeyValuePair<Graph , int[,]>> GraphCopies;     // матрица смежности и граф (не придется пересчитывать)
-        //LinkedList<Graph> graphs;
-        Edition edition;
-
-        bool capturedElps = false;
-        bool capturedPath = false;
-        Point Start;
         private const double shift = 40;        // единое отклонение
-        HashSet<string> names;
-        bool WasSaved = false;                  // предлагать ли сохранение
+        LinkedList<Field> Fields;
+        Field currentField; 
 
         public MainWindow()
         {
             InitializeComponent();
 
-            names = new HashSet<string>();
-
-            edition = new Edition(new Graph());
-            //graphs = new LinkedList<Graph>();
+            Fields = new LinkedList<Field>();
+            currentField = new Field(firstField);
+            Fields.AddLast(currentField);       // первый всегда field
         }
-        
+
+        private void NewCanvas()
+        {
+            // field - канон
+            Canvas canvas = new Canvas
+            {
+                Background = firstField.Background,
+                ClipToBounds = firstField.ClipToBounds
+            };
+            canvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
+
+            Field currentField = new Field(canvas);
+            Fields.AddLast(currentField);      // данные
+
+            canvs.Items.Add(new TabItem
+            {
+                Header = new TextBlock { Text = (canvs.Items.Count + 1).ToString() },
+                Content = canvas
+            });
+
+            canvs.SelectedIndex = canvs.Items.Count - 1;
+        }
+
+        private void DeleteCanvas()
+        {
+            if ((canvs.Items.Count == 1) || (canvs.SelectedIndex != (canvs.Items.Count-1)))
+                return;
+
+            Clear_Canvas(currentField.field);
+            canvs.SelectedIndex = canvs.Items.Count - 2;    // отходим от удаляемого
+            Fields.RemoveLast();
+            canvs.Items.RemoveAt(canvs.Items.Count - 1);    // вызывается SelectionChanged
+
+            //currentField = Fields.ElementAt(canvs.Items.Count-1);
+        }
+
+        private void New_Click(object sender, RoutedEventArgs e)
+        {
+            NewCanvas();
+        }
+
+        private void TabDoubleClick(object sender, MouseEventArgs e)
+        {
+            DeleteCanvas();
+        }
+
+        private void Сanvs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            currentField = Fields.ElementAt(canvs.SelectedIndex);
+        }
+
+
+        // обращение к canvas зависит от выбранного в tab
         private void Choose_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            capturedPath = false;
-            capturedElps = false;
+            currentField.HasPathStart = false;
+            currentField.capturedElps = false;
         }
 
         // mode: 0 - узлы (в 2/3 mode узлы не берем); 1 - выходим из; 2 - входим в; 3 - выходим и входим; 4 - всё, связанное с point
-        private List<Path> FindPathes(Point point, int mode)
+        private List<Path> FindPathes(Canvas field, Point point, int mode)
         {
             int oldMode = mode;
 
@@ -120,7 +184,7 @@ namespace WpfApp1
         }
 
         // mode: 1 - из/в; 2 - в/из; 3 - неважно    (всегда без петель)
-        private List<Path> FindPathes(Point start, Point end, int mode)
+        private List<Path> FindPathes(Canvas field, Point start, Point end, int mode)
         {
             int oldMode = mode;
 
@@ -173,7 +237,7 @@ namespace WpfApp1
             return templist;
         }
 
-        private Ellipse[] FindEllipses(Point start, Point end)
+        private Ellipse[] FindEllipses(Canvas field, Point start, Point end)
         {
             Ellipse[] pair = new Ellipse[2];
             foreach (var child in field.Children)
@@ -201,7 +265,7 @@ namespace WpfApp1
         }
         
         // лежит ли check в координатах чьего - то эллипса, кроме without
-        private bool isEmptyCoord(Point check)
+        private bool isEmptyCoord(Canvas field, Point check)
         {
             for (int i = 0; i < field.Children.Count; i++)
             {
@@ -219,7 +283,7 @@ namespace WpfApp1
             return true;
         }
 
-        private bool isEmptyCoord(Point check, Point without)
+        private bool isEmptyCoord(Canvas field, Point check, Point without)
         {
             for (int i = 0; i < field.Children.Count; i++)
             {
@@ -240,7 +304,7 @@ namespace WpfApp1
             return true;
         }
 
-        private bool isEmptyCoord(Point check, List<Point> without)
+        private bool isEmptyCoord(Canvas field, Point check, List<Point> without)
         {
             for (int i = 0; i < field.Children.Count; i++)
             {
@@ -249,7 +313,7 @@ namespace WpfApp1
 
                 for (int j = 0; j < without.Count; j++)
                 {
-                    if (!isEmptyCoord(check, without[i]))
+                    if (!isEmptyCoord(field, check, without[i]))
                     {
                         return false;
                     }
@@ -259,14 +323,14 @@ namespace WpfApp1
             return true;
         }
 
-        private void AddEdge(Point start, Point end)
+        private void AddEdge(Canvas field, Point start, Point end)
         {
             int count = 0;
             bool orient = true;
 
             if (start.Equals(end))  //петля
             {
-                count = FindPathes(start, 0).Count;
+                count = FindPathes(field, start, 0).Count;
 
                 if (count != 0)    // уже есть петля
                     return;
@@ -276,11 +340,11 @@ namespace WpfApp1
                 }
             }
             else
-                count = FindPathes(start, end, 3).Count;
+                count = FindPathes(field, start, end, 3).Count;
 
             Path path = new Path();
 
-            path = BezPathFab.GetPath(start, end, Brushes.Black, Math.Pow(-1, count) * ((count+1) / 2) * shift, PathCount().ToString(), orient, 1);
+            path = BezPathFab.GetPath(start, end, Brushes.Black, Math.Pow(-1, count) * ((count+1) / 2) * shift, PathCount(field).ToString(), orient, 1);
             BindData(path);
 
             field.Children.Add(path);
@@ -288,9 +352,9 @@ namespace WpfApp1
         }
 
         // перерисовка всех ребер, соединяющих две данные вершины
-        private void RepaintVertPair(Point start, Point end)
+        private void RepaintVertPair(Canvas field, Point start, Point end)
         {
-            var edges = FindPathes(start, end, 3);
+            var edges = FindPathes(field, start, end, 3);
 
             for (int i = 0; i < edges.Count; i++)
             {
@@ -301,7 +365,7 @@ namespace WpfApp1
         }
 
         // start переходит в change
-        private void ChangeVertCoord(Point start, Point change)
+        private void ChangeVertCoord(Canvas field, Point start, Point change)
         {
             if (start.Equals(change))
             {
@@ -318,14 +382,14 @@ namespace WpfApp1
 
                 if (end.Equals(start))      // петля
                 {
-                    var node = FindPathes(start, 0);
+                    var node = FindPathes(field, start, 0);
                     if (node.Count != 0)
                         BezPathFab.ChangePathCoord(node[0], change, change, 5);
 
                     continue;
                 }
 
-                var edgesFrom = FindPathes(start, end, 3);
+                var edgesFrom = FindPathes(field, start, end, 3);
 
                 for (int i = 0; i < edgesFrom.Count; i++)
                 {
@@ -341,15 +405,15 @@ namespace WpfApp1
             }
         }
 
-        private void AddVertex(Point center)
+        private void AddVertex(Canvas field, Point center)
         {
             int NewName = 0;
 
-            while (names.Contains(NewName.ToString()))
+            while (currentField.names.Contains(NewName.ToString()))
             {
                 ++NewName;
             }
-            names.Add(NewName.ToString());
+            currentField.names.Add(NewName.ToString());
 
             Ellipse el = EllipseFab.GetEllipse(center, Brushes.Red, NewName.ToString());
             BindData(el);
@@ -359,17 +423,17 @@ namespace WpfApp1
         }
 
         // удаление всех ребер, связанных с вершиной
-        private void DeleteEdges(Point center)
+        private void DeleteEdges(Canvas field, Point center)
         {
-            var edges = FindPathes(center, 4);
+            var edges = FindPathes(field, center, 4);
 
             for (int i = 0; i < edges.Count; i++)
             {
-                DeleteEdge(edges[i]);
+                DeleteEdge(field, edges[i]);
             }
         }
 
-        private void DeleteEdge(Path path)
+        private void DeleteEdge(Canvas field, Path path)
         {
             if (path != null)
             {
@@ -379,18 +443,18 @@ namespace WpfApp1
             }
         }
 
-        private void DeleteVertex(Ellipse elps)
+        private void DeleteVertex(Canvas field, Ellipse elps)
         {
             if (elps != null)
             {
                 DeleteBindData(elps);
                 field.Children.Remove(elps);
-                names.Remove(elps.Tag.ToString());
+                currentField.names.Remove(elps.Tag.ToString());
                 UpdateGraph(elps, "delete");
             }
         }
 
-        private int PathCount()
+        private int PathCount(Canvas field)
         {
             int count = 0;
             for (int i = 0; i < field.Children.Count; i++)
@@ -404,7 +468,7 @@ namespace WpfApp1
             return count;
         }
 
-        private int EllpsCount()
+        private int EllpsCount(Canvas field)
         {
             int count = 0;
             for (int i = 0; i < field.Children.Count; i++)
@@ -418,14 +482,14 @@ namespace WpfApp1
             return count;
         }
 
-        private void Field_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void Canvas_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (edge.IsChecked == true)
-                capturedPath = false;
+                currentField.HasPathStart = false;
             
             else if (vertex.IsChecked == true)
             {
-                AddVertex(new Point(e.GetPosition(field).X, e.GetPosition(field).Y));
+                AddVertex(currentField.field, new Point(e.GetPosition(currentField.field).X, e.GetPosition(currentField.field).Y));
             }
         }
 
@@ -439,15 +503,15 @@ namespace WpfApp1
             Point center = new Point(Canvas.GetLeft(elps) + 25, Canvas.GetTop(elps) + 25);
             if (edge.IsChecked == true)
             {
-                if (capturedPath)
+                if (currentField.HasPathStart)
                 {
-                    AddEdge(Start, center);
-                    capturedPath = false;
+                    AddEdge(currentField.field, currentField.Start, center);
+                    currentField.HasPathStart = false;
                 }
                 else
                 {
-                    Start = center;
-                    capturedPath = true;
+                    currentField.Start = center;
+                    currentField.HasPathStart = true;
                 }
             }
             else if (hand.IsChecked == true)
@@ -456,12 +520,12 @@ namespace WpfApp1
                 elps.MouseUp += new MouseButtonEventHandler(Ellipse_MouseUp);
                 elps.MouseLeave += new MouseEventHandler(Ellipse_MouseLeave);
 
-                capturedElps = true;
+                currentField.capturedElps = true;
             }
             else if (delete.IsChecked == true)
             {
-                DeleteEdges(center);
-                DeleteVertex(elps);
+                DeleteEdges(currentField.field, center);
+                DeleteVertex(currentField.field, elps);
             }
         }
 
@@ -481,23 +545,23 @@ namespace WpfApp1
         {
             e.Handled = true;
 
-            if (capturedElps)
+            if (currentField.capturedElps)
             {
                 if (!(sender is Ellipse elps))
                     return;
 
-                Point newCoord = new Point(e.GetPosition(field).X, e.GetPosition(field).Y);
+                Point newCoord = new Point(e.GetPosition(currentField.field).X, e.GetPosition(currentField.field).Y);
                 Point oldCoord = new Point(Canvas.GetLeft(elps) + 25, Canvas.GetTop(elps) + 25);
 
-                if (!isEmptyCoord(newCoord, oldCoord))
+                if (!isEmptyCoord(currentField.field, newCoord, oldCoord))
                 {
-                    capturedElps = false;
+                    currentField.capturedElps = false;
                     Point koef = new Point(newCoord.X - oldCoord.X, newCoord.Y - oldCoord.Y);
                     newCoord.X += koef.X * 10;
                     newCoord.Y += koef.Y * 10;
                 }
 
-                ChangeVertCoord(oldCoord, newCoord);
+                ChangeVertCoord(currentField.field ,oldCoord, newCoord);
                 EllipseFab.ChangeElpsCoord(elps, newCoord);
             }
         }
@@ -511,7 +575,7 @@ namespace WpfApp1
             elps.MouseUp -= new MouseButtonEventHandler(Ellipse_MouseUp);
             elps.MouseLeave -= new MouseEventHandler(Ellipse_MouseLeave);
 
-            capturedElps = false;
+            currentField.capturedElps = false;
 
             UpdateGraph(elps, "update");
         }
@@ -539,15 +603,15 @@ namespace WpfApp1
                 path.MouseUp += new MouseButtonEventHandler(Path_MouseUp);
                 path.MouseLeave += new MouseEventHandler(Path_MouseLeave);
 
-                capturedPath = true;
+                currentField.HasPathStart = true;
                 Mouse.Capture(path);
             }
             else if (delete.IsChecked == true)
             {
-                DeleteEdge(path);
+                DeleteEdge(currentField.field, path);
 
                 if (!(data[0].Equals(data[1])))
-                    RepaintVertPair(data[0], data[1]);
+                    RepaintVertPair(currentField.field, data[0], data[1]);
             }
         }
 
@@ -578,7 +642,7 @@ namespace WpfApp1
                 return;
 
             var data = BezPathFab.GetPathCoord(path);
-            BezPathFab.ChangePathCoord(path, data[0], new Point(e.GetPosition(field).X, e.GetPosition(field).Y), data[1]);
+            BezPathFab.ChangePathCoord(path, data[0], new Point(e.GetPosition(currentField.field).X, e.GetPosition(currentField.field).Y), data[1]);
 
             //BezPathFab.ChangePathCoord(path, data[0], data[1],  e.GetPosition(field).Y - e.GetPosition(field).X);
         }
@@ -592,7 +656,7 @@ namespace WpfApp1
             path.MouseUp -= new MouseButtonEventHandler(Path_MouseUp);
             path.MouseLeave -= new MouseEventHandler(Path_MouseLeave);
 
-            capturedPath = false;
+            currentField.HasPathStart = false;
             Mouse.Capture(null);
         }
         
@@ -605,14 +669,14 @@ namespace WpfApp1
             path.MouseUp -= new MouseButtonEventHandler(Path_MouseUp);
             path.MouseLeave -= new MouseEventHandler(Path_MouseLeave);
 
-            capturedPath = false;
+            currentField.HasPathStart = false;
 
             Mouse.Capture(null);
         }
 
         //
         // новым фигурам заполняем делегаты (используй только после Draw) (лишнее использоыание - лишний добавленный делегат!!!)
-        private void ExtBindData()
+        private void ExtBindData(Canvas field)
         {
             foreach (UIElement child in field.Children)
             {
@@ -621,28 +685,28 @@ namespace WpfApp1
                     BindData(child);
 
                     if (child is Ellipse elps)
-                        names.Add(elps.Tag.ToString());
+                        currentField.names.Add(elps.Tag.ToString());
                 }
             }
         }
 
         // только для полной перерисовки (не вызывает UpdateGraph)
-        private void Clear_Canvas()
+        private void Clear_Canvas(Canvas field)
         {
             for (int i = 0; i < field.Children.Count; i++) 
             {
                 if (field.Children[i] is Ellipse elps)
                 {
                     DeleteBindData(elps);
-                    field.Children.Remove(elps);
                 }
                 else if (field.Children[i] is Path path)
                 {
                     DeleteBindData(path);
-                    field.Children.Remove(path);
                 }
             }
-            names.Clear();
+
+            field.Children.Clear();
+            currentField.names.Clear();
         }
 
         private void BindData(UIElement element)
@@ -685,7 +749,7 @@ namespace WpfApp1
                 return;
 
             Point center = EllipseFab.GetCenter((Ellipse)data.DataContext);
-            AddEdge(center, center);
+            AddEdge(currentField.field, center, center);
         }
 
         private void DeleteLoop(object sender, RoutedEventArgs e)
@@ -694,7 +758,7 @@ namespace WpfApp1
                 return;
 
             if (data.DataContext is Ellipse elps)
-                DeleteEdge(FindPathes(EllipseFab.GetCenter(elps), 0).FirstOrDefault<Path>());
+                DeleteEdge(currentField.field, FindPathes(currentField.field, EllipseFab.GetCenter(elps), 0).FirstOrDefault<Path>());
         }
 
         private void ChangeText(object sender, RoutedEventArgs e)
@@ -710,12 +774,12 @@ namespace WpfApp1
             if (text.ShowDialog() == true)
             {
                 string txt = text.GetText();
-                if (!names.Contains(txt))
+                if (!currentField.names.Contains(txt))
                 {
                     string oldName = elps.Tag.ToString();
-                    names.Remove(oldName);
+                    currentField.names.Remove(oldName);
                     EllipseFab.ChangeEllipse(elps, elps.Stroke, txt);
-                    names.Add(txt);
+                    currentField.names.Add(txt);
 
                     UpdateGraph(elps, "update", oldName);
                 }
@@ -782,13 +846,14 @@ namespace WpfApp1
         }
 
         ///////// логика рисовалки кончилась
-        private void DrawOnCnvs(Graph graph)
+        private void DrawOnCnvs(Canvas field, Graph graph)
         {
-            Clear_Canvas();
+            Clear_Canvas(field);
 
             DrawGraph.Draw(field, graph);
-            ExtBindData();
+            ExtBindData(field);
         }
+
         private void SaveGraph(object sender, RoutedEventArgs e)
         {
             SaveFileDialog dialog = new SaveFileDialog
@@ -810,7 +875,7 @@ namespace WpfApp1
                 }
 
 
-                WasSaved = true;
+                currentField.WasSaved = true;
             }
         }
 
@@ -825,7 +890,7 @@ namespace WpfApp1
             {
                 try
                 {
-                    ConvertGraph.CanvasToPng(dialog.FileName, field);
+                    ConvertGraph.CanvasToPng(dialog.FileName, currentField.field);
                 }
                 catch (Exception exc)
                 {
@@ -857,72 +922,80 @@ namespace WpfApp1
             else
                 return;
 
+            NewCanvas();
             //GraphCopies.Clear();    // очистили 'историю'
-            DrawOnCnvs(gr);
+            DrawOnCnvs(currentField.field, gr);
 
-            WasSaved = true;    // пока сохранять не надо
+            currentField.WasSaved = true;    // пока сохранять не надо
         }
 
         // эта функция будет вызываться только когда сделано что то с графом, требующее сохранение для undo/redo
         private void UpdateGraph(UIElement elem, string comm, string oldName = "")
         {
-            Graph newGraph = (Graph)edition.CurrentGraph().Clone();
+            Graph newGraph = (Graph)currentField.edition.CurrentGraph().Clone();
 
-            // связь Shape и элемента в графе - через name
-            if (elem is Ellipse elps)
+            try
             {
-                Point coord = EllipseFab.GetCenter(elps);
-                string name = elps.Tag.ToString();
-                switch (comm)
+                // связь Shape и элемента в графе - через name
+                if (elem is Ellipse elps)
                 {
-                    case "add":
-                        newGraph.AddVertex(new Vertex(name, elps.Stroke, coord.X, coord.Y));
-                        break;
+                    Point coord = EllipseFab.GetCenter(elps);
+                    string name = elps.Tag.ToString();
+                    switch (comm)
+                    {
+                        case "add":
+                            newGraph.AddVertex(new Vertex(name, elps.Stroke, coord.X, coord.Y));
+                            break;
 
-                    case "delete":
-                        newGraph.DeleteVertex(name);
-                        break;
+                        case "delete":
+                            newGraph.DeleteVertex(name);
+                            break;
 
-                    case "update":
-                        if (oldName.Length == 0)     // не меняли имени
-                            newGraph.ChangeVertex(name, name, coord.X, coord.Y, elps.Stroke);
-                        else
-                            newGraph.ChangeVertex(oldName, name, coord.X, coord.Y, elps.Stroke);
+                        case "update":
+                            if (oldName.Length == 0)     // не меняли имени
+                                newGraph.ChangeVertex(name, name, coord.X, coord.Y, elps.Stroke);
+                            else
+                                newGraph.ChangeVertex(oldName, name, coord.X, coord.Y, elps.Stroke);
 
-                        break;
+                            break;
 
-                    default:
-                        break;
+                        default:
+                            break;
+                    }
+                }
+                else if (elem is Path path)
+                {
+                    var data = BezPathFab.GetPathData(path);
+
+                    switch (comm)
+                    {
+                        case "add":
+                            var coord = BezPathFab.GetPathCoord(path);
+                            var elpses = FindEllipses(currentField.field, coord[0], coord[1]);
+                            newGraph.AddEdge((string)data[0], elpses[0].Tag.ToString(), elpses[1].Tag.ToString(), path.Stroke, (bool)data[1], (int)data[2]);
+                            break;
+
+                        case "delete":
+                            newGraph.DeleteEdge((string)data[0]);
+                            break;
+
+                        case "update":
+                            newGraph.ChangeEdge((string)data[0], (bool)data[1], (int)data[2], path.Stroke);
+                            break;
+
+                        default:
+                            break;
+                    }
                 }
             }
-            else if (elem is Path path)
+            catch (Exception)
             {
-                var data = BezPathFab.GetPathData(path);
-
-                switch (comm)
-                {
-                    case "add":
-                        var coord = BezPathFab.GetPathCoord(path);
-                        var elpses = FindEllipses(coord[0], coord[1]);
-                        newGraph.AddEdge((string)data[0], elpses[0].Tag.ToString(), elpses[1].Tag.ToString(), path.Stroke, (bool)data[1], (int)data[2]);
-                        break;
-
-                    case "delete":
-                        newGraph.DeleteEdge((string)data[0]);
-                        break;
-
-                    case "update":
-                        newGraph.ChangeEdge((string)data[0], (bool)data[1], (int)data[2], path.Stroke);
-                        break;
-
-                    default:
-                        break;
-                }
+                return;
             }
 
-            edition.AddGraph(newGraph);
+            currentField.edition.AddGraph(newGraph);
 
-            WasSaved = false;
+            currentField.WasSaved = false;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -934,12 +1007,14 @@ namespace WpfApp1
 
         private void Undo_Click(object sender, RoutedEventArgs e)
         {
-            DrawOnCnvs(edition.Undo());
+            DrawOnCnvs(currentField.field, currentField.edition.Undo());
         }
 
         private void Redo_Click(object sender, RoutedEventArgs e)
         {
-            DrawOnCnvs(edition.Redo());
+            DrawOnCnvs(currentField.field, currentField.edition.Redo());
         }
+
+
     }
 }
