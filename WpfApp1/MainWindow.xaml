@@ -35,7 +35,7 @@
             <MenuItem Header="_File">
                 <MenuItem Header="_New" Click="New_Click" ></MenuItem>
                 <MenuItem Header="_Open" Click="OpenGraph"></MenuItem>
-                <MenuItem Header="_Save" Click="SaveGraph"></MenuItem>
+                <MenuItem Header="_Save" Click="SaveGraphClick"></MenuItem>
                 <MenuItem Header="_Save Png" Click="SaveCanvas"></MenuItem>
 
                 <Separator />
@@ -90,11 +90,15 @@
             </Grid.ColumnDefinitions>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                <TabControl x:Name="canvs" Grid.Column="0" MouseDoubleClick="TabDoubleClick" SelectionChanged="Сanvs_SelectionChanged" >
+                <TabControl x:Name="canvs" Grid.Column="0" SelectionChanged="Сanvs_SelectionChanged" >
                     <TabItem>
-                        <TabItem.Header>1</TabItem.Header>
+                        <TabItem.Header>
+                            <TextBlock MouseRightButtonDown="TextRightClick">1</TextBlock>
+                        </TabItem.Header>
 
-                        <Canvas Name ="firstField" Background="Aqua" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" ClipToBounds="True" />
+                        <TabItem.Content>
+                            <Canvas Name ="firstField" Background="Aqua" MouseLeftButtonDown="Canvas_MouseLeftButtonDown" ClipToBounds="True" />
+                        </TabItem.Content>
                     </TabItem>
                 </TabControl>
             </ScrollViewer>

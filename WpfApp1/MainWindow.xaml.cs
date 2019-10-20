@@ -16,7 +16,7 @@ using System.Windows.Shapes;
 
 namespace WpfApp1
 {
-    struct Field
+    class Field
     {
         public Canvas field;
         public Edition edition;     // матрица смежности и граф пусть тоже будут там (не придется пересчитывать)
@@ -35,7 +35,7 @@ namespace WpfApp1
             capturedElps = false;
             HasPathStart = false;
             names = new HashSet<string>();
-            WasSaved = false;
+            WasSaved = true;
             Start = new Point(0,0);
         }
     }
@@ -44,15 +44,15 @@ namespace WpfApp1
     {
         private const double shift = 40;        // единое отклонение
         LinkedList<Field> Fields;
-        Field currentField; 
+        Field currentField;     // выбранный в конкретный момент canvas
 
         public MainWindow()
         {
             InitializeComponent();
 
             Fields = new LinkedList<Field>();
-            currentField = new Field(firstField);
-            Fields.AddLast(currentField);       // первый всегда field
+            Fields.AddLast(new Field(firstField));       // первый всегда field
+            currentField = Fields.First.Value;    
         }
 
         private void NewCanvas()
@@ -65,12 +65,15 @@ namespace WpfApp1
             };
             canvas.MouseLeftButtonDown += Canvas_MouseLeftButtonDown;
 
-            Field currentField = new Field(canvas);
+            currentField = new Field(canvas);
             Fields.AddLast(currentField);      // данные
+
+            var text = new TextBlock { Text = (canvs.Items.Count + 1).ToString() };
+            text.MouseRightButtonDown += TextRightClick;
 
             canvs.Items.Add(new TabItem
             {
-                Header = new TextBlock { Text = (canvs.Items.Count + 1).ToString() },
+                Header = text,
                 Content = canvas
             });
 
@@ -82,12 +85,20 @@ namespace WpfApp1
             if ((canvs.Items.Count == 1) || (canvs.SelectedIndex != (canvs.Items.Count-1)))
                 return;
 
-            Clear_Canvas(currentField.field);
-            canvs.SelectedIndex = canvs.Items.Count - 2;    // отходим от удаляемого
-            Fields.RemoveLast();
-            canvs.Items.RemoveAt(canvs.Items.Count - 1);    // вызывается SelectionChanged
+            if (!currentField.WasSaved)
+            {
+                if (MessageBox.Show("do you want to save the graph?", "Save", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    SaveGraph();
+            }
 
-            //currentField = Fields.ElementAt(canvs.Items.Count-1);
+            Clear_Canvas(currentField.field);
+            canvs.SelectedIndex = canvs.Items.Count - 2;    // отходим от удаляемого 
+            Fields.RemoveLast();
+
+            var tab = (TabItem)canvs.Items.GetItemAt(canvs.Items.Count - 1);
+            var text = (TextBlock)tab.Header;
+            text.MouseRightButtonDown -= TextRightClick;
+            canvs.Items.RemoveAt(canvs.Items.Count - 1);    // вызывается SelectionChanged
         }
 
         private void New_Click(object sender, RoutedEventArgs e)
@@ -95,7 +106,7 @@ namespace WpfApp1
             NewCanvas();
         }
 
-        private void TabDoubleClick(object sender, MouseEventArgs e)
+        private void TextRightClick(object sender, MouseButtonEventArgs e)
         {
             DeleteCanvas();
         }
@@ -429,17 +440,19 @@ namespace WpfApp1
 
             for (int i = 0; i < edges.Count; i++)
             {
-                DeleteEdge(field, edges[i]);
+                DeleteEdge(field, edges[i], true);
             }
+
         }
 
-        private void DeleteEdge(Canvas field, Path path)
+        private void DeleteEdge(Canvas field, Path path, bool NoUpdate = false)
         {
             if (path != null)
             {
                 DeleteBindData(path);
                 field.Children.Remove(path);
-                UpdateGraph(path, "delete");
+                if (!NoUpdate)
+                    UpdateGraph(path, "delete");
             }
         }
 
@@ -447,6 +460,7 @@ namespace WpfApp1
         {
             if (elps != null)
             {
+                DeleteEdges(field, EllipseFab.GetCenter(elps));
                 DeleteBindData(elps);
                 field.Children.Remove(elps);
                 currentField.names.Remove(elps.Tag.ToString());
@@ -500,7 +514,7 @@ namespace WpfApp1
             if (!(sender is Ellipse elps))
                 return;
 
-            Point center = new Point(Canvas.GetLeft(elps) + 25, Canvas.GetTop(elps) + 25);
+            Point center = EllipseFab.GetCenter(elps);
             if (edge.IsChecked == true)
             {
                 if (currentField.HasPathStart)
@@ -524,7 +538,6 @@ namespace WpfApp1
             }
             else if (delete.IsChecked == true)
             {
-                DeleteEdges(currentField.field, center);
                 DeleteVertex(currentField.field, elps);
             }
         }
@@ -845,6 +858,7 @@ namespace WpfApp1
             UpdateGraph(path, "update");
         }
 
+
         ///////// логика рисовалки кончилась
         private void DrawOnCnvs(Canvas field, Graph graph)
         {
@@ -854,7 +868,7 @@ namespace WpfApp1
             ExtBindData(field);
         }
 
-        private void SaveGraph(object sender, RoutedEventArgs e)
+        private void SaveGraph()
         {
             SaveFileDialog dialog = new SaveFileDialog
             {
@@ -877,6 +891,11 @@ namespace WpfApp1
 
                 currentField.WasSaved = true;
             }
+        }
+
+        private void SaveGraphClick(object sender, RoutedEventArgs e)
+        {
+            SaveGraph();
         }
 
         private void SaveCanvas(object sender, RoutedEventArgs e)
@@ -903,30 +922,31 @@ namespace WpfApp1
         {
             OpenFileDialog dialog = new OpenFileDialog
             {
-                Filter = "Adjacency|*.adj|Incidence|*.inc|Vertex|*.vert|Edge|*.edg|Json|*.json"
+                Filter = "Adjacency|*.adj|Incidence|*.inc|Vertex|*.vert|Edge|*.edg|Json|*.json",
+                Multiselect = true
             };
 
-            Graph gr = null;
+            Graph gr = new Graph();
             if (dialog.ShowDialog().Value)
             {
-                try
+                foreach (var fileName in dialog.FileNames)
                 {
-                    //ConvertGraph.ToFile(dialog.FileName, gr);
-                }
-                catch (Exception exc)
-                {
-                    MessageBox.Show(exc.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
+                    try
+                    {
+                        //ConvertGraph.FromFile(fileName, gr);
+                    }
+                    catch (Exception exc)
+                    {
+                        MessageBox.Show(exc.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    NewCanvas();
+                    DrawOnCnvs(currentField.field, gr);
+
+                    currentField.WasSaved = true;    // пока сохранять не надо
                 }
             }
-            else
-                return;
-
-            NewCanvas();
-            //GraphCopies.Clear();    // очистили 'историю'
-            DrawOnCnvs(currentField.field, gr);
-
-            currentField.WasSaved = true;    // пока сохранять не надо
         }
 
         // эта функция будет вызываться только когда сделано что то с графом, требующее сохранение для undo/redo
@@ -1000,9 +1020,33 @@ namespace WpfApp1
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            // проверить WasSaved
+            // проверить WasSaved на всех Fields
+            foreach (var field in Fields)
+            {
+                if (!field.WasSaved)
+                {
+                    switch (MessageBox.Show("do you want to save graph?", "Save", MessageBoxButton.YesNoCancel, MessageBoxImage.Question))
+                    {
+                        case MessageBoxResult.Yes:
+                            SaveGraph();
+                            break;
 
+                        case MessageBoxResult.No:
+                            break;
 
+                        case MessageBoxResult.Cancel:
+                            e.Cancel = true;
+                            return;
+
+                        default:
+                            break;
+                    }
+                }
+            }
+            
+            e.Cancel = false;
+            
+            // вызывается 2 раза для каждого MessageBox   
         }
 
         private void Undo_Click(object sender, RoutedEventArgs e)

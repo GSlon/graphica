@@ -78,13 +78,13 @@ namespace WpfApp1
             first = second = vert;
         }
 
-        //public bool check(string name)
-        //{
-        //    if ((first == name) || (second == name))
-        //        return true;
+        public bool Contains(Vertex vertex)
+        {
+            if ((first == vertex) || (second == vertex))
+                return true;
 
-        //    return false;
-        //}
+            return false;
+        }
     }
 
     class PairEquality : IEqualityComparer<Pair>
@@ -257,12 +257,19 @@ namespace WpfApp1
             var keys = links.Keys;
             foreach (var key in keys)
             {
-                if (key.Equals(delEdge))
+                if (key.Contains(delEdge))
                     temp.Add(key);
             }
 
             for (int i = 0; i < temp.Count; i++)
+            {
+                foreach (var edge in links[temp[i]])    // удаляем вершины
+                {
+                    edges.Remove(edge.Name);
+                }
+
                 links.Remove(temp[i]);
+            }
 
             verts.Remove(name);
         }
@@ -360,6 +367,13 @@ namespace WpfApp1
             }
 
             return new Graph(tempVerts, tempEdges);
+        }
+
+        public void Clear()
+        {
+            edges.Clear();
+            verts.Clear();
+            links.Clear();
         }
     }
 }

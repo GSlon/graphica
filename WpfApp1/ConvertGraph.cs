@@ -17,18 +17,17 @@ namespace WpfApp1
     class ConvertGraph
     {
         //private static string[] Modes = { "adj", "inc", "vert", "edg", "json" };
-
         // набор статических функций для преобразования
 
         // ребра пусть всегда получают названия по номерам (не пользовательские)
-        public static Graph FromFile(string path)  // считаем, что все проверки на корректность path уже были сделаны до вызова функции
+        
+        // FROM
+        public static void FromFile(string path, Graph graph)  // считаем, что все проверки на корректность path уже были сделаны до вызова функции
         {
-            // можешь дать неориент ребру добавиться в граф 2 раза, но оно точно должно быть в коллекции from (можешь добавить, но в конце пройди и удали всё кроме первого вхождения такого ребра(orient = 0, ))
             // петли всегда не ориетир!!! 
 
-            Graph graph = null;
+            graph.Clear();
             
-            // проверь, правильная строка пришла ли
             StreamReader stream = new StreamReader(path);
 
             switch (path.Split('.')[1])
@@ -59,8 +58,12 @@ namespace WpfApp1
             }
 
             stream.Close();
-            return graph;         // возвращаем новый граф
         }
+
+        //...
+
+        //
+
 
         public static void CanvasToPng(string path, Canvas canvas)      // path - путь до файла
         {
@@ -89,6 +92,8 @@ namespace WpfApp1
             System.IO.File.WriteAllBytes(path, ms.ToArray());
         }
 
+        
+        // TO
         public static void ToFile(string path, Graph graph)   // mode: .inc; .adj
         {
             StreamWriter stream = new StreamWriter(path);
@@ -123,8 +128,14 @@ namespace WpfApp1
             stream.Close();
         }
 
-        public static Graph CanvasToGraph(Canvas canvas)
+        //...
+        
+        //
+        
+        public static void CanvasToGraph(Canvas canvas, Graph graph)
         {
+            graph.Clear();
+
             var edges = new List<Edge>();
             Dictionary<Point, Vertex> temp;     // temp - Dict, хранящий координаты и vertex; с ним будет легче собирать ребра
             
@@ -141,8 +152,9 @@ namespace WpfApp1
 
 
 
-            return new Graph();
         }
+
+
 
         private static Graph AdjToGraph(StreamReader stream)
         {
