@@ -89,7 +89,7 @@
                 <ColumnDefinition Width="0.25*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <!--<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">-->
                 <TabControl x:Name="canvs" Grid.Column="0" SelectionChanged="Сanvs_SelectionChanged" >
                     <TabItem>
                         <TabItem.Header>
@@ -101,7 +101,7 @@
                         </TabItem.Content>
                     </TabItem>
                 </TabControl>
-            </ScrollViewer>
+            <!--</ScrollViewer>-->
 
             <GridSplitter Grid.Column="1" ShowsPreview="False" Width="3"
                 HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="WhiteSmoke">
@@ -113,7 +113,10 @@
                     <RowDefinition Height="0.2*"></RowDefinition>
                 </Grid.RowDefinitions>
 
-                <DataGrid x:Name="dgrid" Grid.Row="0"></DataGrid>
+                <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"> 
+                    <DataGrid x:Name="dgrid" Grid.Row="0"></DataGrid>
+                </ScrollViewer>
+                
                 <RichTextBox x:Name="text" Grid.Row="1" Background="YellowGreen"></RichTextBox>
             </Grid>
 

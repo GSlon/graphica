@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using Newtonsoft.Json;
+using System.ComponentModel;
 
 namespace WpfApp1
 {
@@ -15,12 +17,20 @@ namespace WpfApp1
 
         public Brush brush { get; set; }
 
+        public Vertex(): base()
+        {
+            Name = "";
+            X = 0;
+            Y = 0;
+            brush = Brushes.Black;
+        }
+
         public Vertex(string name, double x = 0, double y = 0) : base()
         {
             Name = name;
             X = x;
             Y = y;
-            brush = Brushes.Black;
+            brush = Brushes.Red;
         }
 
         public Vertex(string name, Brush br ,double x = 0, double y = 0) : base()
@@ -40,6 +50,16 @@ namespace WpfApp1
         public Vertex From { get; set; }
         public Vertex To { get; set; }
         public Brush brush { get; set; }
+
+        public Edge(): base()
+        {
+            Name = "";
+            Weight = 1;
+            Orient = false;
+            From = null;
+            To = null;
+            brush = Brushes.Black;
+        }
 
         public Edge(string name, Vertex from, Vertex to, bool orient = false, int weight = 1) : base()     // false - не направлено; вес по умолчанию = 1
         {
@@ -61,19 +81,33 @@ namespace WpfApp1
             brush = br;
         }
     }
+    
+    internal class PairEquality : IEqualityComparer<Pair>
+    {
+        public bool Equals(Pair firstPair, Pair secondPair)
+        {
+            return ( ((firstPair.first == secondPair.first) && (firstPair.second == secondPair.second)) || ((firstPair.second == secondPair.first) && (firstPair.first == secondPair.second)) );
+        }
 
-    class Pair
+        public int GetHashCode(Pair pair)
+        {
+            int hCode = pair.GetHashCode() ^ pair.GetHashCode();
+            return hCode.GetHashCode();
+        }
+    }
+   
+    class Pair: System.Object
     {
         public Vertex first;
         public Vertex second;
 
-        public Pair(Vertex frst, Vertex scnd)
+        public Pair(Vertex frst, Vertex scnd): base()
         {
             first = frst;
             second = scnd;
         }
 
-        public Pair(Vertex vert)
+        public Pair(Vertex vert): base()
         {
             first = second = vert;
         }
@@ -87,27 +121,14 @@ namespace WpfApp1
         }
     }
 
-    class PairEquality : IEqualityComparer<Pair>
-    {
-        public bool Equals(Pair firstPair, Pair secondPair)
-        {
-            return ( ((firstPair.first == secondPair.first) && (firstPair.second == secondPair.second)) || ((firstPair.second == secondPair.first) && (firstPair.first == secondPair.second)) );
-        }
 
-        public int GetHashCode(Pair pair)
-        {
-            int hCode = pair.GetHashCode() ^ pair.GetHashCode();
-            return hCode.GetHashCode();
-        }
-    }
-
-
-    [Serializable]
+    [JsonObject(MemberSerialization.Fields)]
     class Graph : ICloneable
-    {           
+    {
         private Dictionary<string, Edge> edges;                 // для 'записи' (просто удобный поиск, пользователь класса получит только data/список list)
         private Dictionary<Pair, LinkedList<Edge>> links;      // значение по ключу — те ребра, которые соединяют два Vertexа в любую сторону (нет данных, если нет ребер)   // для 'чтения'
         private Dictionary<string, Vertex> verts;               // список vertex понадобится пользователю
+        
         public Graph()
         {
             links = new Dictionary<Pair, LinkedList<Edge>>(new PairEquality());

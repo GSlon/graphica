@@ -872,15 +872,14 @@ namespace WpfApp1
         {
             SaveFileDialog dialog = new SaveFileDialog
             {
-                Filter = "Adjacency|*.adj|Incidence|*.inc|Vertex|*.vert|Edge|*.edg|Json|*.json"
+                Filter = "Adjacency|*.adj|Incidence|*.inc|Vertex|*.vert|Edge|*.edg"
             };
 
             if (dialog.ShowDialog().Value)
             {
                 try
                 {
-                    //ConvertGraph.CanvasToPng(dialog.FileName, field);
-                    ConvertGraph.FromFile(dialog.FileName);
+                    ConvertGraph.ToFile(dialog.FileName, currentField.edition.CurrentGraph());
                 }
                 catch (Exception exc)
                 {
@@ -922,18 +921,19 @@ namespace WpfApp1
         {
             OpenFileDialog dialog = new OpenFileDialog
             {
-                Filter = "Adjacency|*.adj|Incidence|*.inc|Vertex|*.vert|Edge|*.edg|Json|*.json",
+                Filter = "Adjacency|*.adj|Incidence|*.inc|Vertex|*.vert|Edge|*.edg",
                 Multiselect = true
             };
 
             Graph gr = new Graph();
+
             if (dialog.ShowDialog().Value)
             {
                 foreach (var fileName in dialog.FileNames)
                 {
                     try
                     {
-                        //ConvertGraph.FromFile(fileName, gr);
+                        ConvertGraph.FromFile(fileName, gr);
                     }
                     catch (Exception exc)
                     {
