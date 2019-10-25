@@ -61,6 +61,3 @@ F:\Repos\Graphiz2\WpfApp1\obj\Debug\EditWindow.g.cs
 F:\Repos\Graphiz2\WpfApp1\obj\Debug\EditWindow.baml
 F:\Repos\Graphiz2\WpfApp1\obj\Debug\TextWindow.g.cs
 F:\Repos\Graphiz2\WpfApp1\obj\Debug\TextWindow.baml
-F:\Repos\Graphiz2\WpfApp1\bin\Debug\Newtonsoft.Json.dll
-F:\Repos\Graphiz2\WpfApp1\bin\Debug\Newtonsoft.Json.xml
-F:\Repos\Graphiz2\WpfApp1\obj\Debug\WpfApp1.csproj.CopyComplete

@@ -944,6 +944,7 @@ namespace WpfApp1
                     NewCanvas();
                     DrawOnCnvs(currentField.field, gr);
 
+                    currentField.edition.AddGraph(gr);
                     currentField.WasSaved = true;    // пока сохранять не надо
                 }
             }

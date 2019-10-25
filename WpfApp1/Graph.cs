@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using Newtonsoft.Json;
+//using Newtonsoft.Json;
 using System.ComponentModel;
 
 namespace WpfApp1
@@ -122,7 +122,6 @@ namespace WpfApp1
     }
 
 
-    [JsonObject(MemberSerialization.Fields)]
     class Graph : ICloneable
     {
         private Dictionary<string, Edge> edges;                 // для 'записи' (просто удобный поиск, пользователь класса получит только data/список list)
@@ -231,6 +230,9 @@ namespace WpfApp1
         {
             if (verts.ContainsValue(edge.From) && verts.ContainsValue(edge.To))
             {
+                if (edge.To == edge.From)
+                    edge.Orient = false;
+
                 edges.Add(edge.Name, edge);
                 
                 var pair = new Pair(edge.From, edge.To);
@@ -253,6 +255,9 @@ namespace WpfApp1
         {
             if (edges.ContainsKey(name) || !verts.ContainsKey(from) || !verts.ContainsKey(to))
                 throw new Exception("wrong data");
+
+            if (from == to) // loop
+                orient = false;
 
             Edge newEdge = new Edge(name, verts[from], verts[to], brush, orient, weight);
             edges.Add(name, newEdge);
@@ -365,6 +370,11 @@ namespace WpfApp1
         public List<Vertex> GetVertices()
         {
             return verts.Values.ToList<Vertex>();   
+        }
+
+        public List<Edge> GetEdges()
+        {
+            return edges.Values.ToList<Edge>();
         }
 
         public object Clone()

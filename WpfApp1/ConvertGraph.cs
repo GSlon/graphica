@@ -9,7 +9,8 @@ using System.Windows.Shapes;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Newtonsoft.Json;
+using System.Text.RegularExpressions;
+//using Newtonsoft.Json;
 
 namespace WpfApp1
 {
@@ -38,15 +39,15 @@ namespace WpfApp1
                     break;
 
                 case "inc":
-
-                    break;
-
-                case "vert":
-
+                    FileIncToGraph(stream, graph);
                     break;
 
                 case "edg":
+                    FileEdgeToGraph(stream, graph);
+                    break;
 
+                case "vert":
+                    ListVertex(graph, stream);
                     break;
 
                 //case "json":
@@ -61,14 +62,10 @@ namespace WpfApp1
             stream.Close();
         }
 
+        // adj
         private static void FileAdjToGraph(StreamReader stream, Graph graph)
         {
             NumAdjToGraph(graph, MatrixAdjacency(stream));            
-        }
-
-        private static void JsonToGraph(StreamReader stream, Graph graph)
-        {
-            graph = JsonConvert.DeserializeObject<Graph>(stream.ReadToEnd());
         }
 
         private static List<List<int>> MatrixAdjacency(StreamReader stream)
@@ -110,8 +107,9 @@ namespace WpfApp1
         {
             Dictionary<string, Vertex> vers = new Dictionary<string, Vertex>();
 
-            Point temp = new Point(0, 0);
+            Point temp = new Point(50, 50);
             Point copyTemp;
+            int mul = 1;
             for (int i = 0; i < matrix.Count; i++)
             {
                 copyTemp = temp;
@@ -120,18 +118,17 @@ namespace WpfApp1
                 {
                     if (i % 2 == 0)
                     {
-                        copyTemp.X += 100;
+                        copyTemp.X += 80 * mul;
                     }
                     else
-                        copyTemp.Y += 100;
+                        copyTemp.Y += 80 * mul;
                 }
                 else
                 {
-                    temp.X += 100;
-                    temp.Y += 100;
+                    copyTemp.X += 80 * mul;
+                    copyTemp.Y += 80 * mul;
 
-                    copyTemp.X += 100;
-                    copyTemp.Y += 100;
+                    ++mul;
                 }
 
                 Vertex vertex = new Vertex(i.ToString(), copyTemp.X, copyTemp.Y);
@@ -169,163 +166,228 @@ namespace WpfApp1
             }
         }
 
+        // inc
+        private static void FileIncToGraph(StreamReader stream, Graph graph)
+        {
+            NumIncToGraph(graph, MatrixIncidence(stream));
+        }
 
-        //static public List<List<int>> MatrixIncidence(string path)
-        //{
-        //    List<List<int>> matrix_inc = new List<List<int>>();
+        private static List<List<int>> MatrixIncidence(StreamReader stream)
+        {
+            List<List<int>> matrix = new List<List<int>>();
 
-        //    using (StreamReader sr = new StreamReader(path))
-        //    {
-        //        string line;
+            string line = "";
 
-        //        while ((line = sr.ReadLine()) != null)
-        //        {
-        //            int i = 0;
-        //            List<int> list = new List<int>();
+            while ((line = stream.ReadLine()) != null)
+            {
+                if (line.Length > 0)
+                {
+                    line = line.Split('%')[0];  // отсекли коммент
+                    var row = line.Split(' ');
 
-        //            while ((line[i] != '\n') && (line[i] != '%'))
-        //            {
-        //                if (line[i] == ' ')
-        //                {
-        //                    i++;
-        //                    continue;
-        //                }
-        //                else
-        //                {
-        //                    if ((line[i] == '-') || ((line[i] >= '0') && (line[i] <= '9')))
-        //                    {
-        //                        string str = "";
-        //                        while ((line[i] != ' ') && (line[i] != '\n'))
-        //                        {
-        //                            str += line[i];
-        //                            if ((line.Length - (++i)) == 0)
-        //                                break;
-        //                        }
+                    List<int> iRow = new List<int>();
+                    foreach (var cell in row)
+                    {
+                        if (cell.Trim() != "")
+                            iRow.Add(int.Parse(cell.Trim()));  // избавились от лишних пробелов
+                    }
 
-        //                        list.Add(Int16.Parse(str));
-        //                    }
-        //                    else
-        //                        throw new Exception("bad char");
-        //                }
+                    matrix.Add(iRow);
+                }
+                else
+                    continue;
+            }
 
-        //                if (i < line.Length - 1)
-        //                    i++;
-        //                else
-        //                    break;
-        //            }
-        //            matrix_inc.Add(list);
-        //        }
-        //    }
+            return matrix;
+        }
 
-        //    return matrix_inc;
-        //}
+        private static void NumIncToGraph(Graph graph, List<List<int>> matrix)
+        {
+            Dictionary<string, Vertex> vers = new Dictionary<string, Vertex>();
 
-        //static public Dictionary<int, List<string>> ListEdge(string path)
-        //{
-        //    string list;
-        //    Dictionary<int, List<string>> list_ed = new Dictionary<int, List<string>>();
+            Point temp = new Point(50, 50);
+            Point copyTemp;
+            int mul = 1;
+            for (int i = 0; i < matrix.Count; i++)
+            {
+                copyTemp = temp;
 
-        //    using (StreamReader sr = new StreamReader(path))
-        //        list = sr.ReadToEnd(); // считали в одну строку
+                if (i % 3 != 0)
+                {
+                    if (i % 2 == 0)
+                    {
+                        copyTemp.X += 80 * mul;
+                    }
+                    else
+                        copyTemp.Y += 80 * mul;
+                }
+                else
+                {
+                    copyTemp.X += 80 * mul;
+                    copyTemp.Y += 80 * mul;
 
-        //    Regex regex_edge = new Regex(@"Edges{[0-9a-zA-Z\s,()]+\}", RegexOptions.Multiline);  // проверка на Edge{......}
-        //    MatchCollection matchCollection = regex_edge.Matches(list); // получение всех списков рёбер
+                    ++mul;
+                }
 
-        //    Regex regex_value = new Regex(@"(\d*)\( (\d*), (\w*), (\w*), (\d)\)"); // проверка на правильное содержимое {.....}
+                Vertex vertex = new Vertex(i.ToString(), copyTemp.X, copyTemp.Y);
+                graph.AddVertex(vertex);
+                vers.Add(i.ToString(), vertex);
+            }
 
-        //    foreach (Match match in matchCollection)
-        //    {
-        //        MatchCollection mat = regex_value.Matches(match.Value); // получение содержимого для данного списка рёбер
+            int name = 0;
+            List<int> vs = new List<int>();
+            List<int> vert = new List<int>();
+            for (int i = 0; i < matrix[0].Count; i++)
+            {
+                for (int j = 0; j < matrix.Count; j++)
+                {
+                    if (matrix[j][i] != 0)
+                    {
+                        vs.Add(matrix[j][i]);
+                        vert.Add(j);
+                    }
+                }
 
-        //        foreach (Match i in mat)
-        //            if (!list_ed.ContainsKey(int.Parse(i.Groups[1].Value)))
-        //                list_ed.Add(int.Parse(i.Groups[1].Value), new List<string> { i.Groups[2].Value, i.Groups[3].Value, i.Groups[4].Value, i.Groups[5].Value });
-        //    }
+                if (vs.Count == 1)  // loop
+                {
+                    if (vs[0] < 0)
+                        throw new Exception("wrong format");
 
-        //    return list_ed;
-        //}
+                    graph.AddEdge(new Edge(name.ToString(), vers[vert[0].ToString()], vers[vert[0].ToString()], false, vs[0]));
+                }
+                else if (vs.Count == 2)
+                {
+                    if ((Math.Abs(vs[0]) != Math.Abs(vs[1])) || ((vs[0] < 0) && (vs[1] < 0)))
+                        throw new Exception("wrong format");
 
-        //static public void ListVertex(Graph graph, string path)
-        //{
-        //    string list;
+                    if (vs[0] == vs[1])
+                        graph.AddEdge(new Edge(name.ToString(), vers[vert[0].ToString()], vers[vert[1].ToString()], false, vs[0]));
+                    else if (vs[0] > vs[1])
+                        graph.AddEdge(new Edge(name.ToString(), vers[vert[0].ToString()], vers[vert[1].ToString()], true, vs[0]));
+                    else
+                        graph.AddEdge(new Edge(name.ToString(), vers[vert[1].ToString()], vers[vert[0].ToString()], true, vs[1]));
+                }
+                else
+                    throw new Exception("wrong format");
 
-        //    using (StreamReader sr = new StreamReader(path))
-        //        list = sr.ReadToEnd(); // считали в одну строку
+                ++name;
 
-        //    Regex regex_edge = new Regex(@"^Vertex{[0-9a-zA-Z\s,()]+\}", RegexOptions.Multiline);
-        //    MatchCollection matchCollection = regex_edge.Matches(list);
+                vs.Clear();
+                vert.Clear();
+            }
+        }
 
-        //    Regex regex_value = new Regex(@"(\w*)\( (\d*), (\d*)\)");
+        // edges
+        private static void FileEdgeToGraph(StreamReader stream, Graph graph)
+        {
+            DictEdgeToGraph(graph, DictEdge(stream));
+        }
 
-        //    foreach (Match match in matchCollection)
-        //    {
-        //        MatchCollection mat = regex_value.Matches(match.Value);
+        private static Dictionary<int, List<string>> DictEdge(StreamReader stream)
+        {
+            string list;
+            Dictionary<int, List<string>> list_ed = new Dictionary<int, List<string>>();
 
-        //        foreach (Match i in mat)
-        //            graph.addVert(new Vertex(double.Parse(i.Groups[2].ToString()), double.Parse(i.Groups[3].ToString())), i.Groups[1].ToString());
-        //    }
-        //}
+            list = stream.ReadToEnd(); // считали в одну строку
 
-        
+            Regex regex_edge = new Regex(@"Edges{[0-9a-zA-Z\s,()]+\}", RegexOptions.Multiline);  // проверка на Edge{......}
+            MatchCollection matchCollection = regex_edge.Matches(list); // получение всех списков рёбер
 
-        //static public void FromIncToGraph(Graph graph, List<List<int>> matr)
-        //{
-        //    for (int i = 0; i < matr.Count; i++)
-        //        graph.addVert(new Vertex(center.X + 50 * i * (1 - Math.Pow(-1, i)), center.Y + 50 * i * (1 - Math.Pow(-1, i + 1)))); //graph.addVert(new Vertex(center.X + 50 * i * Math.Pow(-1, i), center.Y + 50 * i * Math.Pow(-1, i)));
+            Regex regex_value = new Regex(@"(\d*)\( (\d*), (\w*), (\w*), (\d)\)"); // проверка на правильное содержимое {.....}
 
-        //    for (int i = 0; i < matr[0].Count; i++)
-        //    {
-        //        List<int> vs = new List<int>();
-        //        List<int> check_positon = new List<int>();
+            foreach (Match match in matchCollection)
+            {
+                MatchCollection mat = regex_value.Matches(match.Value); // получение содержимого для данного списка рёбер
 
-        //        for (int j = 0; j < matr.Count; j++)
-        //        {
-        //            if (matr[j][i] != 0)
-        //            {
-        //                vs.Add(matr[j][i]);
-        //                check_positon.Add(j);
-        //            }
-        //        }
+                foreach (Match i in mat)
+                    if (!list_ed.ContainsKey(int.Parse(i.Groups[1].Value)))
+                        list_ed.Add(int.Parse(i.Groups[1].Value), new List<string> { i.Groups[2].Value, i.Groups[3].Value, i.Groups[4].Value, i.Groups[5].Value });
+            }
 
-        //        if (vs.Count == 1)
-        //            graph.addEdge(new List<string> { check_positon[0].ToString(), check_positon[0].ToString() }, new Edge(vs[0].ToString()));
-        //        else
-        //            if (vs.Count == 2)
-        //            if (vs[0] == vs[1])
-        //                graph.addEdge(new List<string> { check_positon[0].ToString(), check_positon[1].ToString() }, new Edge(vs[0].ToString()));
-        //            else if (vs[0] > vs[1])
-        //                graph.addEdge(new List<string> { check_positon[0].ToString(), check_positon[1].ToString() }, new Edge(vs[0].ToString(), true));
-        //            else
-        //                graph.addEdge(new List<string> { check_positon[0].ToString(), check_positon[1].ToString() }, new Edge((-vs[0]).ToString(), false, true));
-        //        else
-        //            throw new Exception("It is edge not exist");
-        //    }
-        //}
+            return list_ed;
+        }
 
-        //static public void FromListEdgeToGraph(Graph graph, Dictionary<int, List<string>> list_ed)
-        //{
-        //    if (list_ed.Count == 0)
-        //        throw new Exception("Bad enter");
+        private static void DictEdgeToGraph(Graph graph, Dictionary<int, List<string>> info)
+        {
+            if (info.Count == 0)
+                throw new Exception("Bad input");
 
-        //    int i = 0;
-        //    foreach (int key in list_ed.Keys)
-        //    {
-        //        // {[0] weight, [1] name_1, [2] name_2, [3] orient}
+            // собрали имена vertex
+            HashSet<string> UniqueNames = new HashSet<string>();
+            foreach (var data in info.Values)
+            {
+                if (!UniqueNames.Contains(data[1]))
+                    UniqueNames.Add(data[1]);
 
-        //        graph.addVert(new Vertex(center.X + 50 * i * (1 - Math.Pow(-1, i)), center.Y + 50 * i * (1 - Math.Pow(-1, i + 1))), list_ed[key][1]);
-        //        i++;
-        //        graph.addVert(new Vertex(center.X + 50 * i * (1 - Math.Pow(-1, i)), center.Y + 50 * i * (1 - Math.Pow(-1, i + 1))), list_ed[key][2]);
+                if (!UniqueNames.Contains(data[2]))
+                    UniqueNames.Add(data[2]);
+            }
 
-        //        if (int.Parse(list_ed[key][3]) == 0)
-        //            graph.addEdge(new List<string> { list_ed[key][1], list_ed[key][2] }, new Edge(list_ed[key][0].ToString()));
-        //        else
-        //            if (int.Parse(list_ed[key][3]) >= 1)
-        //            graph.addEdge(new List<string> { list_ed[key][1], list_ed[key][2] }, new Edge(list_ed[key][0].ToString(), true));
+            Point temp = new Point(50, 50);
+            Point copyTemp;
+            int mul = 1;
+            Dictionary<string, Vertex> vers = new Dictionary<string, Vertex>();
+            int i = 0;
+            foreach (var name in UniqueNames)
+            {
+                copyTemp = temp;
 
-        //    }
-        //}
-        //
+                if (i % 3 != 0)
+                {
+                    if (i % 2 == 0)
+                    {
+                        copyTemp.X += 80 * mul;
+                    }
+                    else
+                        copyTemp.Y += 80 * mul;
+                }
+                else
+                {
+                    copyTemp.X += 80 * mul;
+                    copyTemp.Y += 80 * mul;
 
+                    ++mul;
+                }
+
+                Vertex vertex = new Vertex(name, copyTemp.X, copyTemp.Y);
+                graph.AddVertex(vertex);
+                vers.Add(name, vertex);
+                ++i;
+            }
+
+
+            foreach (int key in info.Keys)
+            {
+                // {[0] weight, [1] name_1, [2] name_2, [3] orient
+                if (int.Parse(info[key][3]) == 0)
+                    graph.AddEdge(new Edge(key.ToString(), vers[info[key][1]], vers[info[key][2]] , false, int.Parse(info[key][0])));
+                else
+                    if (int.Parse(info[key][3]) >= 1)
+                        graph.AddEdge(new Edge(key.ToString(), vers[info[key][1]], vers[info[key][2]], true, int.Parse(info[key][0])));
+
+            }
+        }
+
+        // verts
+        private static void ListVertex(Graph graph, StreamReader stream)
+        {
+            string list = "";
+
+            list = stream.ReadToEnd(); // считали в одну строку
+
+            Regex regex_edge = new Regex(@"^Vertex{[0-9a-zA-Z\s,()]+\}", RegexOptions.Multiline);
+            MatchCollection matchCollection = regex_edge.Matches(list);
+
+            Regex regex_value = new Regex(@"(\w*)\( (\d*), (\d*)\)");
+
+            foreach (Match match in matchCollection)
+            {
+                MatchCollection mat = regex_value.Matches(match.Value);
+
+                foreach (Match i in mat)
+                    graph.AddVertex(new Vertex(i.Groups[1].ToString(), double.Parse(i.Groups[2].ToString()), double.Parse(i.Groups[3].ToString())));
+            }
+        }
 
 
         // TO
@@ -336,24 +398,20 @@ namespace WpfApp1
             switch (path.Split('.')[1])
             {
                 case "adj":
-
+                    GraphToAdjFile(graph, stream);
                     break;
 
                 case "inc":
-
+                    GraphToIncFile(graph, stream);
                     break;
 
                 case "vert":
-
+                    GraphToVertFile(graph, stream);
                     break;
 
                 case "edg":
-
+                    GraphToEdgeFile(graph, stream);
                     break;
-
-                //case "json":
-                //    GraphToJson(stream, graph);
-                //    break;
 
                 default:
                     stream.Close();
@@ -363,20 +421,110 @@ namespace WpfApp1
             stream.Close();
         }
 
-        private static int[,] GraphToInc(StreamWriter stream, Graph graph)   
+        private static void GraphToVertFile(Graph graph, StreamWriter stream)
         {
+            string line = "Vertex{";
 
-            return new int[4, 4];         // возвращаем двумерный массив
+            foreach (var vertex in graph.GetVertices())
+            {
+                line += vertex.Name + "( " + vertex.X + ", " + vertex.Y + "), ";
+            }
+
+            line = line.Remove(line.Length - 2) + "}";
+
+            stream.WriteLine(line);
         }
 
-        private static void GraphToJson(StreamWriter stream, Graph graph)
+        private static void GraphToEdgeFile(Graph graph, StreamWriter stream)
         {
-            stream.Write(JsonConvert.SerializeObject(graph));
+            string line = "Edges{";
+
+            foreach (var edge in graph.GetEdges())
+            {
+                line += edge.Name + "( " + edge.Weight.ToString() + ", " + edge.From.Name + ", " + edge.To.Name + ", " + Convert.ToInt32(edge.Orient).ToString() + "), ";
+            }
+
+            line = line.Remove(line.Length - 2) + "}";
+
+            stream.WriteLine(line);
         }
 
+        private static void GraphToAdjFile(Graph graph, StreamWriter stream)
+        {
+            var verts = graph.GetVertices();
+            var edges = graph.GetEdges();
 
-       
+            Dictionary<Vertex, int> numVert = new Dictionary<Vertex, int>();    // пронумеруем все вершины
+            int i = 0;
+            foreach (var vertex in verts)
+            {
+                numVert.Add(vertex, i);
+                ++i;
+            }
 
+            int[,] matrix = new int[verts.Count, verts.Count];
+            foreach (var edge in edges)
+            {
+                if (edge.Orient)
+                {
+                    matrix[numVert[edge.From], numVert[edge.To]] = edge.Weight;
+                    matrix[numVert[edge.To], numVert[edge.From]] = 0;
+                }
+                else
+                {
+                    matrix[numVert[edge.From], numVert[edge.To]] = edge.Weight;
+                    matrix[numVert[edge.To], numVert[edge.From]] = edge.Weight;
+                }
+            }
+
+            for (i = 0; i < verts.Count; i++)
+            {
+                for (int j = 0; j < verts.Count; j++)
+                {
+                    stream.Write(matrix[i, j].ToString() + " ");    
+                }
+                stream.Write("\n");
+            }
+        }
+
+        private static void GraphToIncFile(Graph graph, StreamWriter stream)
+        {
+            var verts = graph.GetVertices();
+            var edges = graph.GetEdges();
+
+            Dictionary<Vertex, int> numVert = new Dictionary<Vertex, int>();    // пронумеруем все вершины
+            int i = 0;
+            foreach (var vertex in verts)
+            {
+                numVert.Add(vertex, i);
+                ++i;
+            }
+
+
+            int[,] matrix = new int[verts.Count, edges.Count];
+            for (i = 0; i < edges.Count; i++)
+            {
+                if (edges[i].Orient)
+                {
+                    matrix[numVert[edges[i].From], i] = edges[i].Weight;
+                    matrix[numVert[edges[i].To], i] = -edges[i].Weight;
+                }
+                else
+                {
+                    matrix[numVert[edges[i].From], i] = edges[i].Weight;
+                    matrix[numVert[edges[i].To], i] = edges[i].Weight;
+                }
+            }
+
+            for (i = 0; i < verts.Count; i++)
+            {
+                for (int j = 0; j < edges.Count; j++)
+                {
+                    stream.Write(matrix[i, j].ToString() + " ");
+                }
+                stream.Write("\n");
+            }
+        }
         //
 
 
