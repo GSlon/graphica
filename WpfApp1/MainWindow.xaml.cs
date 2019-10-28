@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -114,6 +115,7 @@ namespace WpfApp1
         private void Сanvs_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             currentField = Fields.ElementAt(canvs.SelectedIndex);
+            dataGrid.ItemsSource = currentField.edition.CurrentDataTable().DefaultView;
         }
 
 
@@ -834,7 +836,7 @@ namespace WpfApp1
                 }
             }
 
-            UpdateGraph(path, "update");
+            UpdateGraph(path, "change");
         }
 
         private void ChangeWeight(object sender, RoutedEventArgs e)
@@ -860,12 +862,16 @@ namespace WpfApp1
 
 
         ///////// логика рисовалки кончилась
-        private void DrawOnCnvs(Canvas field, Graph graph)
+        private void DrawOnCnvs(Canvas field, Graph graph, bool reSource = true)
         {
             Clear_Canvas(field);
 
             DrawGraph.Draw(field, graph);
             ExtBindData(field);
+
+            //dataGrid.ItemsSource = null;
+            if (reSource)
+                dataGrid.ItemsSource = ConvertGraph.GraphToDataTable(graph).DefaultView;
         }
 
         private void SaveGraph()
@@ -886,7 +892,6 @@ namespace WpfApp1
                     MessageBox.Show(exc.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }
-
 
                 currentField.WasSaved = true;
             }
@@ -957,8 +962,7 @@ namespace WpfApp1
 
             try
             {
-                // связь Shape и элемента в графе - через name
-                if (elem is Ellipse elps)
+                if (elem is Ellipse elps)   // связь Shape и элемента в графе - через name
                 {
                     Point coord = EllipseFab.GetCenter(elps);
                     string name = elps.Tag.ToString();
@@ -1004,6 +1008,11 @@ namespace WpfApp1
                             newGraph.ChangeEdge((string)data[0], (bool)data[1], (int)data[2], path.Stroke);
                             break;
 
+                        case "change":
+                            newGraph.ChangeEdge((string)data[0], (bool)data[1], (int)data[2], path.Stroke);
+                            newGraph.ChangeEdgeDirection((string)data[0]);
+                            break;
+
                         default:
                             break;
                     }
@@ -1015,6 +1024,7 @@ namespace WpfApp1
             }
 
             currentField.edition.AddGraph(newGraph);
+            dataGrid.ItemsSource = ConvertGraph.GraphToDataTable(newGraph).DefaultView;
 
             currentField.WasSaved = false;
         }
@@ -1060,6 +1070,53 @@ namespace WpfApp1
             DrawOnCnvs(currentField.field, currentField.edition.Redo());
         }
 
+        private void DataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            try
+            {
+                int parse = dataGrid.SelectedIndex;
 
+                if ((e.EditAction == DataGridEditAction.Commit)) // если нажали enter или как-то другим образом фиксируем новое значение
+                {
+                    string str = ((TextBox)e.EditingElement).Text;
+
+                    uint ui;
+                    if (uint.TryParse(str, out ui))
+                    {
+                        DataTable dataTable = currentField.edition.CurrentDataTable();    // до изменений
+                        dataTable.Rows[parse][dataGrid.CurrentCell.Column.Header.ToString()] = ui.ToString(); // записали правильное содержимое в DataTable
+
+                        Graph newGraph = (Graph)currentField.edition.CurrentGraph().Clone();
+                        ConvertGraph.DataTableToGraph(newGraph, dataTable);          // изменили граф по подобию DataTeble
+                        currentField.edition.AddGraph(newGraph);
+
+                        DrawOnCnvs(currentField.field, newGraph, false);   // отрисовали
+                        currentField.WasSaved = false;
+                    }
+                    else
+                    {
+                        MessageBox.Show("wrong format");
+                        e.Cancel = true;   
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                e.Cancel = true;
+                return;
+            }
+        }
+        
+        private void ExitClick(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void DataGrid_MouseLeave(object sender, MouseEventArgs e)
+        {
+            //dataGrid.ItemsSource = currentField.edition.CurrentDataTable().DefaultView;
+        }
     }
 }

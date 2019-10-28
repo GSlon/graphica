@@ -10,6 +10,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Text.RegularExpressions;
+using System.Windows.Data;
+using System.Data;
 //using Newtonsoft.Json;
 
 namespace WpfApp1
@@ -161,7 +163,8 @@ namespace WpfApp1
                         if (matrix[i][j] != 0)
                             graph.AddEdge(new Edge(name.ToString(), vers[i.ToString()], vers[j.ToString()], false, matrix[i][j]));
 
-                    ++name;
+                    if ((matrix[i][j] != 0) || (matrix[j][i] != 0))
+                        ++name;
                 }
             }
         }
@@ -398,7 +401,7 @@ namespace WpfApp1
             switch (path.Split('.')[1])
             {
                 case "adj":
-                    GraphToAdjFile(graph, stream);
+                    MatrixToAdjFile(GraphToNumAdj(graph), stream);
                     break;
 
                 case "inc":
@@ -427,7 +430,7 @@ namespace WpfApp1
 
             foreach (var vertex in graph.GetVertices())
             {
-                line += vertex.Name + "( " + vertex.X + ", " + vertex.Y + "), ";
+                line += vertex.Name + "( " +  Convert.ToInt32(vertex.X) + ", " + Convert.ToInt32(vertex.Y) + "), ";
             }
 
             line = line.Remove(line.Length - 2) + "}";
@@ -449,7 +452,7 @@ namespace WpfApp1
             stream.WriteLine(line);
         }
 
-        private static void GraphToAdjFile(Graph graph, StreamWriter stream)
+        public static int[,] GraphToNumAdj(Graph graph)
         {
             var verts = graph.GetVertices();
             var edges = graph.GetEdges();
@@ -477,11 +480,16 @@ namespace WpfApp1
                 }
             }
 
-            for (i = 0; i < verts.Count; i++)
+            return matrix;
+        }
+
+        private static void MatrixToAdjFile(int[,] matrix, StreamWriter stream)
+        {
+            for (int i = 0; i < Convert.ToInt32(Math.Sqrt(matrix.Length)); i++)
             {
-                for (int j = 0; j < verts.Count; j++)
+                for (int j = 0; j < Convert.ToInt32(Math.Sqrt(matrix.Length)); j++)
                 {
-                    stream.Write(matrix[i, j].ToString() + " ");    
+                    stream.Write(matrix[i, j].ToString() + " ");
                 }
                 stream.Write("\n");
             }
@@ -526,7 +534,6 @@ namespace WpfApp1
             }
         }
         //
-
 
         public static void CanvasToGraph(Canvas canvas, Graph graph)
         {
@@ -588,6 +595,92 @@ namespace WpfApp1
                 ms.Close();
 
             System.IO.File.WriteAllBytes(path, ms.ToArray());
+        }
+
+        public static DataTable GraphToDataTable(Graph graph)
+        {
+            DataTable data = new DataTable();
+
+            foreach (var vertex in graph.GetVertices())
+            {
+                data.Columns.Add(vertex.Name);
+            }
+
+            var matrix = GraphToNumAdj(graph);
+
+            for (int i = 0; i < Convert.ToInt32(Math.Sqrt(matrix.Length)); i++)
+            {
+                DataRow row = data.NewRow();
+
+                for (int j = 0; j < Convert.ToInt32(Math.Sqrt(matrix.Length)); j++)
+                {
+                    row[j] = matrix[i, j].ToString();
+                }
+
+                data.Rows.Add(row);
+            }
+
+            return data;
+        }
+
+        // переносим только edges (чтобы сохранить координаты у Vertex)
+        public static void DataTableToGraph(Graph graph, DataTable data)
+        {
+            if (graph.GetVertices().Count != data.Rows.Count)
+            {
+                throw new Exception("wrong dimension");
+            }
+
+            graph.ClearEdges();
+
+            // название column ставим в соответствие с именем графа
+            List<Vertex> nameVert = new List<Vertex>();
+
+            foreach (DataColumn vertex in data.Columns)
+            {
+                nameVert.Add(graph.FindVertex(vertex.ColumnName));
+            }
+
+            List<List<int>> matrix = new List<List<int>>();
+            foreach (DataRow row in data.Rows)
+            {
+                List<int> list = new List<int>();
+
+                foreach (DataColumn column in data.Columns)
+                    list.Add(int.Parse(row[column].ToString()));
+
+                matrix.Add(list);
+            }
+
+            int name = 0;
+            for (int i = 0; i < matrix.Count; i++)
+            {
+                for (int j = i; j < matrix.Count; j++)
+                {
+                    if (((matrix[i][j] < 0) || (matrix[j][i] < 0)))
+                        throw new Exception("wrong matrix format");
+
+                    if (matrix[i][j] != matrix[j][i])
+                    {
+                        if ((matrix[i][j] != 0) && (matrix[j][i] != 0))
+                            throw new Exception("wrong matrix format");
+                        else
+                        {
+                            if (matrix[i][j] > matrix[j][i])
+                                graph.AddEdge(new Edge(name.ToString(), nameVert[i], nameVert[j], true, matrix[i][j]));
+
+                            else if (matrix[i][j] < matrix[j][i])
+                                graph.AddEdge(new Edge(name.ToString(), nameVert[j], nameVert[i], true, matrix[j][i]));
+                        }
+                    }
+                    else
+                        if (matrix[i][j] != 0)
+                            graph.AddEdge(new Edge(name.ToString(), nameVert[i], nameVert[j], false, matrix[i][j]));
+
+                    if ((matrix[i][j] != 0) || (matrix[j][i] != 0))
+                        ++name;
+                }
+            }
         }
 
     }

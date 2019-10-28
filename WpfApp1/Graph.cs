@@ -362,6 +362,26 @@ namespace WpfApp1
 
         }
 
+        public void ChangeEdgeDirection(string name)
+        {
+            if (edges.ContainsKey(name))
+            {
+                Vertex temp = edges[name].From;
+
+                edges[name].From = edges[name].To;
+                edges[name].To = temp;
+            }
+            else
+                throw new Exception("The name doesnt exist");
+        }
+        public Vertex FindVertex(string name)
+        {
+            if (verts.ContainsKey(name))
+                return verts[name];
+            else
+                throw new Exception("name doesnt exist");
+        }
+
         public Dictionary<Pair, LinkedList<Edge>> GetLinks()
         {
             return links;     
@@ -404,6 +424,12 @@ namespace WpfApp1
         {
             edges.Clear();
             verts.Clear();
+            links.Clear();
+        }
+
+        public void ClearEdges()
+        {
+            edges.Clear();
             links.Clear();
         }
     }

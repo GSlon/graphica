@@ -40,7 +40,7 @@
 
                 <Separator />
                 
-                <MenuItem Header="_Exit" />
+                <MenuItem Header="_Exit" Click="ExitClick"/>
             </MenuItem>
             
             <MenuItem Header="_Tasks" ></MenuItem>
@@ -114,7 +114,9 @@
                 </Grid.RowDefinitions>
 
                 <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"> 
-                    <DataGrid x:Name="dgrid" Grid.Row="0"></DataGrid>
+                    <DataGrid x:Name="dataGrid" Grid.Row="0" CellEditEnding="DataGrid_CellEditEnding" AutoGenerateColumns="True" CanUserSortColumns="False" CanUserAddRows="False" MouseLeave="DataGrid_MouseLeave">
+                        
+                    </DataGrid>
                 </ScrollViewer>
                 
                 <RichTextBox x:Name="text" Grid.Row="1" Background="YellowGreen"></RichTextBox>
